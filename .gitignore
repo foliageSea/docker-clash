@@ -4,9 +4,7 @@ web/dist/
 web/*.tsbuildinfo
 
 # Runtime state, caches, and logs
-data/*.log
-data/*.db
-data/state.json
+data/
 
 # Local environment files
 .env
