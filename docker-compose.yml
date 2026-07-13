@@ -1,0 +1,17 @@
+services:
+  nexus:
+    build:
+      context: .
+      args:
+        MIHOMO_VERSION: v1.19.28
+    image: foliage-sea/nexus-proxy-ui:local
+    restart: unless-stopped
+    ports:
+      - "9080:9080"
+      - "${NEXUS_MIXED_HOST_PORT:-27890}:7890/tcp"
+      - "${NEXUS_MIXED_HOST_PORT:-27890}:7890/udp"
+    volumes:
+      - nexus-data:/data
+
+volumes:
+  nexus-data:

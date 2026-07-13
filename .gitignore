@@ -1,0 +1,14 @@
+# Frontend dependencies and build output
+web/node_modules/
+web/dist/
+web/*.tsbuildinfo
+
+# Runtime state, caches, and logs
+data/*.log
+data/*.db
+data/state.json
+
+# Local environment files
+.env
+.env.*
+!.env.example
