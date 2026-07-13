@@ -31,6 +31,26 @@ NEXUS_MIXED_HOST_PORT=27890 docker compose up --build -d
 
 On PowerShell, set `$env:NEXUS_MIXED_HOST_PORT = "27890"` before running Docker Compose.
 
+### Release image archives
+
+Pushing a semantic version tag builds `linux/amd64` and `linux/arm64` Docker image archives and attaches them to the matching GitHub Release. Both the asset filenames and image tags contain the version.
+
+```sh
+git tag -a v1.2.0 -m "v1.2.0"
+git push origin v1.2.0
+```
+
+Download the archive for the target architecture, verify it against `SHA256SUMS-v1.2.0.txt`, and load it:
+
+```sh
+gzip -dc nexus-proxy-ui-v1.2.0-linux-amd64.tar.gz | docker load
+docker run --name nexus-proxy-ui -d --restart unless-stopped \
+  -p 9080:9080 -p 27890:7890/tcp -p 27890:7890/udp \
+  -v nexus-data:/data foliage-sea/nexus-proxy-ui:v1.2.0
+```
+
+The workflow can also be run manually for an existing version tag from the Actions page.
+
 ### Windows LAN access
 
 Docker publishes the proxy port on the Windows host, but Windows Firewall can still block other LAN devices. Run an elevated PowerShell window once:
