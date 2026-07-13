@@ -21,7 +21,7 @@ Open `http://127.0.0.1:9080`. For frontend hot reload, run `npm run dev` under `
 docker compose up --build -d
 ```
 
-The image includes the pinned Linux mihomo core for `linux/amd64` or `linux/arm64`. UI is exposed on port `9080`. The container mixed port `7890` is published as host port `27890` by default to avoid conflicts with local proxy clients and common Windows reserved ranges. Enable LAN access in Network Settings before using the proxy from another device.
+The image includes the pinned Linux mihomo core for `linux/amd64` or `linux/arm64`. UI is exposed on port `9080`. The container mixed port `7890` is published as host port `27890` by default to avoid conflicts with local proxy clients and common Windows reserved ranges. LAN access is enabled by default for new installations and can be disabled in Network Settings.
 
 To choose another host proxy port:
 

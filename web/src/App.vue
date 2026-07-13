@@ -29,7 +29,7 @@ const view = ref<View>('overview'),
   settings = ref<Settings>({
     listen: '127.0.0.1:9080',
     mixedPort: 7890,
-    allowLan: false,
+    allowLan: true,
     bindAddress: '*',
   })
 const busy = ref(false),

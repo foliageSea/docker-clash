@@ -27,5 +27,5 @@ type State struct {
 }
 
 func DefaultState() State {
-	return State{Settings: Settings{Listen: "127.0.0.1:9080", MixedPort: 7890, BindAddress: "*"}, Nodes: []Node{}}
+	return State{Settings: Settings{Listen: "127.0.0.1:9080", MixedPort: 7890, AllowLAN: true, BindAddress: "*"}, Nodes: []Node{}}
 }
