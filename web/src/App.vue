@@ -13,6 +13,7 @@ const nav=[{id:'overview',label:'概览',icon:CircleGauge},{id:'nodes',label:'�
 async function load(){try{[status.value,nodes.value,settings.value]=await Promise.all([api.status(),api.nodes(),api.settings()]);error.value=''}catch(e){error.value=(e as Error).message}}
 async function run(fn:()=>Promise<unknown>,message='操作已完成'){busy.value=true;error.value='';try{await fn();notice.value=message;setTimeout(()=>notice.value='',2200);await load()}catch(e){error.value=(e as Error).message}finally{busy.value=false}}
 async function importURI(){await run(()=>api.importNode(uri.value),'节点或订阅已导入');uri.value='';showImport.value=false}
+async function clearNodes(){if(confirm(`确定清空全部 ${nodes.value.length} 个节点吗？此操作不可撤销。`))await run(()=>api.clearNodes(),'全部节点已清空')}
 async function testDelay(n:Node){await run(async()=>{const r=await api.delay(n.id);delays.value[n.id]=r.delay},'延迟测试完成')}
 async function setDialer(n:Node,value:string){const copy={...n,dialerProxy:value||undefined};await run(()=>api.updateNode(copy),'代理链已更新')}
 onMounted(load)
@@ -37,7 +38,7 @@ onMounted(load)
       </section>
 
       <section v-else-if="view==='nodes'">
-        <div class="section-head"><div><h3>代理节点</h3><p>支持 SOCKS5、SS、VMess、VLESS、Trojan、Hysteria2 和 TUIC URI</p></div><Button @click="showImport=true"><Plus :size="16"/>导入节点</Button></div>
+        <div class="section-head"><div><h3>代理节点</h3><p>支持 SOCKS5、SS、VMess、VLESS、Trojan、Hysteria2 和 TUIC URI</p></div><div class="button-row"><Button variant="destructive" :disabled="!nodes.length||busy" @click="clearNodes"><Trash2 :size="16"/>清空全部</Button><Button @click="showImport=true"><Plus :size="16"/>导入节点</Button></div></div>
         <div class="table-wrap"><table><thead><tr><th>节点</th><th>协议</th><th>服务器</th><th>延迟</th><th>链路入口</th><th></th></tr></thead><tbody><tr v-for="n in nodes" :key="n.id"><td><div class="node-name"><i :class="{active:n.name===settings.selectedNode}"></i><strong>{{n.name}}</strong></div></td><td><span class="tag">{{n.type}}</span></td><td class="mono">{{n.server}}:{{n.port}}</td><td><button class="delay" @click="testDelay(n)">{{delays[n.id]?`${delays[n.id]} ms`:'测试'}}</button></td><td>{{n.dialerProxy||'DIRECT'}}</td><td class="actions"><Button variant="ghost" size="sm" @click="run(()=>api.selectNode(n.id),'默认出口已切换')">设为默认</Button><Button variant="ghost" size="icon" title="删除" @click="run(()=>api.deleteNode(n.id),'节点已删除')"><Trash2 :size="16"/></Button></td></tr><tr v-if="!nodes.length"><td colspan="6" class="empty">导入第一个节点以开始使用</td></tr></tbody></table></div>
       </section>
 

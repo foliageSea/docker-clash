@@ -28,6 +28,7 @@ func (a *API) Register(r *gin.RouterGroup) {
 	r.GET("/status", a.status)
 	r.GET("/nodes", a.nodes)
 	r.POST("/nodes/import", a.importNode)
+	r.DELETE("/nodes", a.clearNodes)
 	r.PUT("/nodes/:id", a.updateNode)
 	r.DELETE("/nodes/:id", a.deleteNode)
 	r.POST("/nodes/:id/select", a.selectNode)
@@ -135,6 +136,16 @@ func (a *API) deleteNode(c *gin.Context) {
 		if s.Settings.SelectedNode == name {
 			s.Settings.SelectedNode = ""
 		}
+		return nil
+	}) {
+		return
+	}
+	c.Status(204)
+}
+func (a *API) clearNodes(c *gin.Context) {
+	if !a.apply(c, func(s *model.State) error {
+		s.Nodes = []model.Node{}
+		s.Settings.SelectedNode = ""
 		return nil
 	}) {
 		return
