@@ -31,6 +31,26 @@ NEXUS_MIXED_HOST_PORT=27890 docker compose up --build -d
 
 On PowerShell, set `$env:NEXUS_MIXED_HOST_PORT = "27890"` before running Docker Compose.
 
+### Local image archive
+
+Build the image for the host architecture and export it as a gzip-compressed Docker archive under `dist/`:
+
+```sh
+sh scripts/build-docker-image.sh
+```
+
+The optional arguments are image tag, target architecture, and output directory. For example:
+
+```sh
+sh scripts/build-docker-image.sh v1.2.0 amd64 ./dist
+```
+
+Set `IMAGE_NAME` or `MIHOMO_VERSION` to override their defaults. Load an exported archive with:
+
+```sh
+gzip -dc dist/nexus-proxy-ui-v1.2.0-linux-amd64.tar.gz | docker load
+```
+
 ### Release image archives
 
 Pushing a semantic version tag builds `linux/amd64` and `linux/arm64` Docker image archives and attaches them to the matching GitHub Release. Both the asset filenames and image tags contain the version.
