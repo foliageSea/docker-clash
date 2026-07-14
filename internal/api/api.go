@@ -33,6 +33,11 @@ func (a *API) Register(r *gin.RouterGroup) {
 	r.DELETE("/nodes/:id", a.deleteNode)
 	r.POST("/nodes/:id/select", a.selectNode)
 	r.POST("/nodes/:id/delay", a.delay)
+	r.GET("/entry-groups", a.entryGroups)
+	r.POST("/entry-groups", a.createEntryGroup)
+	r.PUT("/entry-groups/:id", a.updateEntryGroup)
+	r.DELETE("/entry-groups/:id", a.deleteEntryGroup)
+	r.POST("/entry-groups/:id/select", a.selectEntryGroupNode)
 	r.GET("/settings", a.settings)
 	r.PUT("/settings", a.updateSettings)
 	r.POST("/core/:action", a.coreAction)
@@ -63,7 +68,7 @@ func (a *API) apply(c *gin.Context, fn func(*model.State) error) bool {
 }
 func (a *API) status(c *gin.Context) {
 	s := a.store.Get()
-	c.JSON(200, gin.H{"core": a.core.Status(), "settings": s.Settings, "nodeCount": len(s.Nodes)})
+	c.JSON(200, gin.H{"core": a.core.Status(), "settings": s.Settings, "nodeCount": len(s.Nodes), "entryGroupCount": len(s.EntryGroups)})
 }
 func (a *API) nodes(c *gin.Context) { c.JSON(200, a.store.Get().Nodes) }
 func (a *API) importNode(c *gin.Context) {
@@ -107,9 +112,20 @@ func (a *API) updateNode(c *gin.Context) {
 	if !a.apply(c, func(s *model.State) error {
 		for i := range s.Nodes {
 			if s.Nodes[i].ID == id {
+				oldName := s.Nodes[i].Name
 				req.ID = id
 				req.CreatedAt = s.Nodes[i].CreatedAt
 				s.Nodes[i] = req
+				if oldName != req.Name {
+					for j := range s.Nodes {
+						if s.Nodes[j].DialerProxy == oldName {
+							s.Nodes[j].DialerProxy = req.Name
+						}
+					}
+					if s.Settings.SelectedNode == oldName {
+						s.Settings.SelectedNode = req.Name
+					}
+				}
 				return nil
 			}
 		}
@@ -129,7 +145,12 @@ func (a *API) deleteNode(c *gin.Context) {
 		name := s.Nodes[idx].Name
 		for _, n := range s.Nodes {
 			if n.DialerProxy == name {
-				return errors.New("node is used by a proxy chain")
+				return errors.New("node is referenced as dialer proxy by node " + n.Name)
+			}
+		}
+		for _, g := range s.EntryGroups {
+			if slices.Contains(g.NodeIDs, id) {
+				return errors.New("node is referenced by entry group " + g.Name)
 			}
 		}
 		s.Nodes = append(s.Nodes[:idx], s.Nodes[idx+1:]...)
@@ -144,10 +165,137 @@ func (a *API) deleteNode(c *gin.Context) {
 }
 func (a *API) clearNodes(c *gin.Context) {
 	if !a.apply(c, func(s *model.State) error {
+		if len(s.EntryGroups) != 0 {
+			return errors.New("cannot clear nodes while entry groups exist")
+		}
 		s.Nodes = []model.Node{}
 		s.Settings.SelectedNode = ""
 		return nil
 	}) {
+		return
+	}
+	c.Status(204)
+}
+
+func (a *API) entryGroups(c *gin.Context) { c.JSON(200, a.store.Get().EntryGroups) }
+
+func (a *API) createEntryGroup(c *gin.Context) {
+	var req model.EntryGroup
+	if err := c.ShouldBindJSON(&req); err != nil {
+		fail(c, 400, err)
+		return
+	}
+	req.SetDefaults()
+	id, err := model.NewID()
+	if err != nil {
+		fail(c, 500, err)
+		return
+	}
+	req.ID = id
+	if !a.apply(c, func(s *model.State) error {
+		s.EntryGroups = append(s.EntryGroups, req)
+		return nil
+	}) {
+		return
+	}
+	c.JSON(201, req)
+}
+
+func (a *API) updateEntryGroup(c *gin.Context) {
+	var req model.EntryGroup
+	if err := c.ShouldBindJSON(&req); err != nil {
+		fail(c, 400, err)
+		return
+	}
+	req.SetDefaults()
+	id := c.Param("id")
+	if !a.apply(c, func(s *model.State) error {
+		for i := range s.EntryGroups {
+			if s.EntryGroups[i].ID == id {
+				oldName := s.EntryGroups[i].Name
+				req.ID = id
+				s.EntryGroups[i] = req
+				if oldName != req.Name {
+					for j := range s.Nodes {
+						if s.Nodes[j].DialerProxy == oldName {
+							s.Nodes[j].DialerProxy = req.Name
+						}
+					}
+				}
+				return nil
+			}
+		}
+		return errors.New("entry group not found")
+	}) {
+		return
+	}
+	c.JSON(200, req)
+}
+
+func (a *API) deleteEntryGroup(c *gin.Context) {
+	id := c.Param("id")
+	if !a.apply(c, func(s *model.State) error {
+		idx := slices.IndexFunc(s.EntryGroups, func(g model.EntryGroup) bool { return g.ID == id })
+		if idx < 0 {
+			return errors.New("entry group not found")
+		}
+		name := s.EntryGroups[idx].Name
+		for _, n := range s.Nodes {
+			if n.DialerProxy == name {
+				return errors.New("entry group is referenced as dialer proxy by node " + n.Name)
+			}
+		}
+		s.EntryGroups = append(s.EntryGroups[:idx], s.EntryGroups[idx+1:]...)
+		return nil
+	}) {
+		return
+	}
+	c.Status(204)
+}
+
+func (a *API) selectEntryGroupNode(c *gin.Context) {
+	var req struct {
+		NodeID string `json:"nodeId" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		fail(c, 400, err)
+		return
+	}
+	s := a.store.Get()
+	idx := slices.IndexFunc(s.EntryGroups, func(g model.EntryGroup) bool { return g.ID == c.Param("id") })
+	if idx < 0 {
+		fail(c, 404, errors.New("entry group not found"))
+		return
+	}
+	group := s.EntryGroups[idx]
+	if group.Type != "select" {
+		fail(c, 400, errors.New("entry group is not select type"))
+		return
+	}
+	if !slices.Contains(group.NodeIDs, req.NodeID) {
+		fail(c, 400, errors.New("node is not a member of entry group"))
+		return
+	}
+	nodeIdx := slices.IndexFunc(s.Nodes, func(n model.Node) bool { return n.ID == req.NodeID })
+	if nodeIdx < 0 {
+		fail(c, 400, errors.New("entry group member node not found"))
+		return
+	}
+	if a.core.Status().Running {
+		if err := a.client.Select(group.Name, s.Nodes[nodeIdx].Name); err != nil {
+			fail(c, 502, err)
+			return
+		}
+	}
+	if err := a.store.Update(func(st *model.State) error {
+		idx := slices.IndexFunc(st.EntryGroups, func(g model.EntryGroup) bool { return g.ID == group.ID })
+		if idx < 0 {
+			return errors.New("entry group not found")
+		}
+		st.EntryGroups[idx].SelectedNodeID = req.NodeID
+		return config.Validate(*st)
+	}); err != nil {
+		fail(c, 400, err)
 		return
 	}
 	c.Status(204)

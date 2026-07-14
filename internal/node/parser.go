@@ -153,7 +153,13 @@ func decodeBase64(s string) ([]byte, error) {
 	}
 	return base64.StdEncoding.DecodeString(s)
 }
-func newID() string { return strconv.FormatInt(time.Now().UnixNano(), 36) }
+func newID() string {
+	id, err := model.NewID()
+	if err == nil {
+		return id
+	}
+	return strconv.FormatInt(time.Now().UnixNano(), 36)
+}
 func stringValue(m map[string]any, key, fallback string) string {
 	if v := fmt.Sprint(m[key]); v != "" && v != "<nil>" {
 		return v

@@ -8,6 +8,16 @@ export interface Node {
   options?: Record<string, unknown>
   createdAt: string
 }
+export interface EntryGroup {
+  id: string
+  name: string
+  type: 'select' | 'fallback'
+  nodeIds: string[]
+  selectedNodeId?: string
+  testUrl?: string
+  interval?: number
+}
+export type EntryGroupInput = Omit<EntryGroup, 'id' | 'selectedNodeId'>
 export interface Settings {
   listen: string
   mixedPort: number
@@ -19,6 +29,7 @@ export interface Status {
   core: { running: boolean; pid?: number; error?: string }
   settings: Settings
   nodeCount: number
+  entryGroupCount: number
 }
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`/api${path}`, {
@@ -35,6 +46,20 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 export const api = {
   status: () => request<Status>('/status'),
   nodes: () => request<Node[]>('/nodes'),
+  entryGroups: () => request<EntryGroup[]>('/entry-groups'),
+  createEntryGroup: (group: EntryGroupInput) =>
+    request<EntryGroup>('/entry-groups', { method: 'POST', body: JSON.stringify(group) }),
+  updateEntryGroup: (group: EntryGroup) =>
+    request<EntryGroup>(`/entry-groups/${group.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(group),
+    }),
+  deleteEntryGroup: (id: string) => request<void>(`/entry-groups/${id}`, { method: 'DELETE' }),
+  selectEntryGroupNode: (id: string, nodeId: string) =>
+    request<void>(`/entry-groups/${id}/select`, {
+      method: 'POST',
+      body: JSON.stringify({ nodeId }),
+    }),
   importNode: (uri: string) =>
     request<{ count: number; nodes: Node[] }>('/nodes/import', {
       method: 'POST',
