@@ -363,6 +363,7 @@ onMounted(load)
                   <Button
                     variant="ghost"
                     size="sm"
+                    :disabled="busy || n.name === settings.selectedNode"
                     @click="run(() => api.selectNode(n.id), '默认出口已切换')"
                     >设为默认</Button
                   ><Button
