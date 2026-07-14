@@ -2,9 +2,11 @@
 web/node_modules/
 web/dist/
 web/*.tsbuildinfo
+cmd/nexus/webdist/
 
 # Runtime state, caches, and logs
 data/
+dist/
 
 # Local environment files
 .env
