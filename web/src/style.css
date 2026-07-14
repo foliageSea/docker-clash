@@ -423,6 +423,14 @@ h3 {
   border-radius: 7px;
   overflow: auto;
 }
+.node-table-wrap {
+  max-height: max(280px, calc(100dvh - 240px));
+}
+.node-table-wrap th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
 table {
   width: 100%;
   border-collapse: collapse;
@@ -496,6 +504,10 @@ tr:last-child td {
     11px ui-monospace,
     monospace;
   cursor: pointer;
+}
+.delay:disabled {
+  color: #8a918c;
+  cursor: wait;
 }
 .actions {
   text-align: right;
@@ -1033,6 +1045,9 @@ tr:last-child td {
   }
   .group-dialog {
     padding: 18px;
+  }
+  .node-table-wrap {
+    max-height: max(280px, calc(100dvh - 330px));
   }
 }
 @theme inline {

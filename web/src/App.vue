@@ -47,7 +47,8 @@ const busy = ref(false),
   showGroupDialog = ref(false),
   editingGroupId = ref<string>(),
   uri = ref(''),
-  delays = ref<Record<string, number>>({})
+  delays = ref<Record<string, number>>({}),
+  testingNodeIds = ref<Set<string>>(new Set())
 const emptyGroup: EntryGroupInput = {
   name: '',
   type: 'select',
@@ -106,10 +107,42 @@ async function deleteNode(node: Node) {
     await run(() => api.deleteNode(node.id), '节点已删除')
 }
 async function testDelay(n: Node) {
-  await run(async () => {
+  testingNodeIds.value = new Set(testingNodeIds.value).add(n.id)
+  try {
     const r = await api.delay(n.id)
-    delays.value[n.id] = r.delay
-  }, '延迟测试完成')
+    delays.value = { ...delays.value, [n.id]: r.delay }
+    toast.success('延迟测试完成')
+  } catch (e) {
+    const next = { ...delays.value }
+    delete next[n.id]
+    delays.value = next
+    toast.error((e as Error).message)
+  } finally {
+    const next = new Set(testingNodeIds.value)
+    next.delete(n.id)
+    testingNodeIds.value = next
+  }
+}
+async function testAllDelays() {
+  const targets = [...nodes.value]
+  testingNodeIds.value = new Set(targets.map((node) => node.id))
+  const results = await Promise.allSettled(
+    targets.map(async (node) => ({ node, result: await api.delay(node.id) })),
+  )
+  const next = { ...delays.value }
+  let failures = 0
+  results.forEach((result, index) => {
+    const id = targets[index].id
+    if (result.status === 'fulfilled') next[id] = result.value.result.delay
+    else {
+      delete next[id]
+      failures++
+    }
+  })
+  delays.value = next
+  testingNodeIds.value = new Set()
+  if (failures) toast.error(`测试完成，${targets.length - failures} 个成功，${failures} 个失败`)
+  else toast.success(`全部 ${targets.length} 个节点测试完成`)
 }
 async function setDialer(n: Node, value: string) {
   const copy = { ...n, dialerProxy: value || undefined }
@@ -276,12 +309,17 @@ onMounted(load)
             <p>支持 SOCKS5、SS、VMess、VLESS、Trojan、Hysteria2 和 TUIC URI</p>
           </div>
           <div class="button-row">
-            <Button variant="destructive" :disabled="!nodes.length || busy" @click="clearNodes"
+            <Button
+              variant="outline"
+              :disabled="!nodes.length || testingNodeIds.size > 0"
+              @click="testAllDelays"
+              ><Activity :size="16" />一键测试</Button
+            ><Button variant="destructive" :disabled="!nodes.length || busy" @click="clearNodes"
               ><Trash2 :size="16" />清空全部</Button
             ><Button @click="showImport = true"><Plus :size="16" />导入节点</Button>
           </div>
         </div>
-        <div class="table-wrap">
+        <div class="table-wrap node-table-wrap">
           <table>
             <thead>
               <tr>
@@ -306,8 +344,14 @@ onMounted(load)
                 </td>
                 <td class="mono">{{ n.server }}:{{ n.port }}</td>
                 <td>
-                  <button class="delay" @click="testDelay(n)">
-                    {{ delays[n.id] ? `${delays[n.id]} ms` : '测试' }}
+                  <button class="delay" :disabled="testingNodeIds.has(n.id)" @click="testDelay(n)">
+                    {{
+                      testingNodeIds.has(n.id)
+                        ? '测试中...'
+                        : delays[n.id] !== undefined
+                          ? `${delays[n.id]} ms`
+                          : '测试'
+                    }}
                   </button>
                 </td>
                 <td>

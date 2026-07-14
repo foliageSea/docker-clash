@@ -11,11 +11,13 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
 	coreconfig "github.com/foliageSea/nexus-proxy-ui/internal/config"
 	"github.com/foliageSea/nexus-proxy-ui/internal/model"
+	"gopkg.in/yaml.v3"
 )
 
 type Status struct {
@@ -32,9 +34,31 @@ type Manager struct {
 }
 
 func New(dataDir, binary string) *Manager {
-	b := make([]byte, 24)
-	_, _ = rand.Read(b)
-	return &Manager{dataDir: dataDir, binary: binary, controller: "127.0.0.1:19090", secret: hex.EncodeToString(b)}
+	return &Manager{dataDir: dataDir, binary: binary, controller: "127.0.0.1:19090", secret: loadControllerSecret(dataDir)}
+}
+
+func loadControllerSecret(dataDir string) string {
+	secretPath := filepath.Join(dataDir, "controller-secret")
+	if b, err := os.ReadFile(secretPath); err == nil {
+		if secret := strings.TrimSpace(string(b)); secret != "" {
+			return secret
+		}
+	}
+
+	var existing struct {
+		Secret string `yaml:"secret"`
+	}
+	if b, err := os.ReadFile(filepath.Join(dataDir, "config.yaml")); err == nil {
+		_ = yaml.Unmarshal(b, &existing)
+	}
+	secret := strings.TrimSpace(existing.Secret)
+	if secret == "" {
+		b := make([]byte, 24)
+		_, _ = rand.Read(b)
+		secret = hex.EncodeToString(b)
+	}
+	_ = coreconfig.Write(secretPath, []byte(secret))
+	return secret
 }
 func (m *Manager) Controller() (string, string) { return m.controller, m.secret }
 
