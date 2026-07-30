@@ -58,19 +58,19 @@ jobs:
           context: .
           platforms: linux/${{ matrix.arch }}
           tags: ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.value }}
-           outputs: type=docker,dest=${{ runner.temp }}/docker-clash-${{ steps.version.outputs.value }}-linux-${{ matrix.arch }}.tar
+          outputs: type=docker,dest=${{ runner.temp }}/docker-clash-${{ steps.version.outputs.value }}-linux-${{ matrix.arch }}.tar
           cache-from: type=gha,scope=release-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=release-${{ matrix.arch }}
 
       - name: Compress image archive
         shell: bash
-           run: gzip -9 "${{ runner.temp }}/docker-clash-${{ steps.version.outputs.value }}-linux-${{ matrix.arch }}.tar"
+        run: gzip -9 "${{ runner.temp }}/docker-clash-${{ steps.version.outputs.value }}-linux-${{ matrix.arch }}.tar"
 
       - name: Upload image artifact
         uses: actions/upload-artifact@v4
         with:
-           name: docker-clash-${{ steps.version.outputs.value }}-linux-${{ matrix.arch }}
-           path: ${{ runner.temp }}/docker-clash-${{ steps.version.outputs.value }}-linux-${{ matrix.arch }}.tar.gz
+          name: docker-clash-${{ steps.version.outputs.value }}-linux-${{ matrix.arch }}
+          path: ${{ runner.temp }}/docker-clash-${{ steps.version.outputs.value }}-linux-${{ matrix.arch }}.tar.gz
           if-no-files-found: error
           retention-days: 1
 
@@ -91,7 +91,7 @@ jobs:
       - name: Download image artifacts
         uses: actions/download-artifact@v5
         with:
-           pattern: docker-clash-${{ steps.version.outputs.value }}-*
+          pattern: docker-clash-${{ steps.version.outputs.value }}-*
           path: dist
           merge-multiple: true
 
