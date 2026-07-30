@@ -13,9 +13,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/foliageSea/nexus-proxy-ui/internal/api"
-	"github.com/foliageSea/nexus-proxy-ui/internal/core"
-	"github.com/foliageSea/nexus-proxy-ui/internal/store"
+	"github.com/foliageSea/docker-clash/internal/api"
+	"github.com/foliageSea/docker-clash/internal/core"
+	"github.com/foliageSea/docker-clash/internal/store"
 	"github.com/gin-gonic/gin"
 )
 
@@ -39,7 +39,7 @@ func main() {
 	serveSPA(r)
 	srv := &http.Server{Addr: env("NEXUS_LISTEN", s.Get().Settings.Listen), Handler: r, ReadHeaderTimeout: 5 * time.Second}
 	go func() {
-		log.Printf("Nexus Proxy UI listening on http://%s", srv.Addr)
+		log.Printf("Docker Clash listening on http://%s", srv.Addr)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal(err)
 		}

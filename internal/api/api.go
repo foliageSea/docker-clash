@@ -6,11 +6,11 @@ import (
 	"slices"
 	"time"
 
-	"github.com/foliageSea/nexus-proxy-ui/internal/config"
-	"github.com/foliageSea/nexus-proxy-ui/internal/core"
-	"github.com/foliageSea/nexus-proxy-ui/internal/model"
-	nodeparser "github.com/foliageSea/nexus-proxy-ui/internal/node"
-	"github.com/foliageSea/nexus-proxy-ui/internal/store"
+	"github.com/foliageSea/docker-clash/internal/config"
+	"github.com/foliageSea/docker-clash/internal/core"
+	"github.com/foliageSea/docker-clash/internal/model"
+	nodeparser "github.com/foliageSea/docker-clash/internal/node"
+	"github.com/foliageSea/docker-clash/internal/store"
 	"github.com/gin-gonic/gin"
 )
 

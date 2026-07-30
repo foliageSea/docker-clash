@@ -14,7 +14,7 @@ Arguments:
   output-dir  Archive output directory (default: dist)
 
 Environment:
-  IMAGE_NAME       Image repository (default: foliage-sea/nexus-proxy-ui)
+  IMAGE_NAME       Image repository (default: foliage-sea/docker-clash)
   MIHOMO_VERSION   mihomo version passed to the Docker build (default: v1.19.28)
 EOF
 }
@@ -32,7 +32,7 @@ ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 TAG=${1:-local}
 ARCH=${2:-}
 OUTPUT_DIR=${3:-"$ROOT_DIR/dist"}
-IMAGE_NAME=${IMAGE_NAME:-foliage-sea/nexus-proxy-ui}
+IMAGE_NAME=${IMAGE_NAME:-foliage-sea/docker-clash}
 MIHOMO_VERSION=${MIHOMO_VERSION:-v1.19.28}
 
 if ! printf '%s\n' "$TAG" | grep -Eq '^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$'; then
@@ -67,7 +67,7 @@ fi
 mkdir -p "$OUTPUT_DIR"
 
 IMAGE_REF="$IMAGE_NAME:$TAG"
-ARCHIVE="$OUTPUT_DIR/nexus-proxy-ui-$TAG-linux-$ARCH.tar.gz"
+ARCHIVE="$OUTPUT_DIR/docker-clash-$TAG-linux-$ARCH.tar.gz"
 TAR_TMP="$ARCHIVE.tar.tmp"
 GZIP_TMP="$ARCHIVE.tmp"
 

@@ -1,5 +1,5 @@
 {
-  "name": "nexus-proxy-ui-web",
+  "name": "docker-clash-web",
   "private": true,
   "version": "0.1.0",
   "type": "module",

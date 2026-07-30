@@ -1,4 +1,4 @@
-module github.com/foliageSea/nexus-proxy-ui
+module github.com/foliageSea/docker-clash
 
 go 1.22.5
 

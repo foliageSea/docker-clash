@@ -15,8 +15,8 @@ import (
 	"sync"
 	"time"
 
-	coreconfig "github.com/foliageSea/nexus-proxy-ui/internal/config"
-	"github.com/foliageSea/nexus-proxy-ui/internal/model"
+	coreconfig "github.com/foliageSea/docker-clash/internal/config"
+	"github.com/foliageSea/docker-clash/internal/model"
 	"gopkg.in/yaml.v3"
 )
 

@@ -2,7 +2,7 @@
 web/node_modules/
 web/dist/
 web/*.tsbuildinfo
-cmd/nexus/webdist/
+cmd/webdist/
 
 # Runtime state, caches, and logs
 data/

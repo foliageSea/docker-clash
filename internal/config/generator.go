@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"slices"
 
-	"github.com/foliageSea/nexus-proxy-ui/internal/model"
+	"github.com/foliageSea/docker-clash/internal/model"
 	"gopkg.in/yaml.v3"
 )
 

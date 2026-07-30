@@ -1,6 +1,6 @@
-# Nexus Proxy UI
+# Docker Clash
 
-Nexus Proxy UI is a local management application for a bundled MetaCubeX mihomo core. The backend uses Go and Gin; the frontend is an engineered Vue 3, Vite and shadcn-vue application.
+Docker Clash is a local management application for a bundled MetaCubeX mihomo core. The backend uses Go and Gin; the frontend is an engineered Vue 3, Vite and shadcn-vue application.
 
 ## Windows development
 
@@ -10,7 +10,7 @@ Set-Location web
 npm install
 npm run build
 Set-Location ..
-go run .\cmd\nexus
+go run .\cmd
 ```
 
 Open `http://127.0.0.1:9080`. For frontend hot reload, run `npm run dev` under `web/`; Vite proxies `/api` to the Go service.
@@ -48,7 +48,7 @@ sh scripts/build-docker-image.sh v1.2.0 amd64 ./dist
 Set `IMAGE_NAME` or `MIHOMO_VERSION` to override their defaults. Load an exported archive with:
 
 ```sh
-gzip -dc dist/nexus-proxy-ui-v1.2.0-linux-amd64.tar.gz | docker load
+gzip -dc dist/docker-clash-v1.2.0-linux-amd64.tar.gz | docker load
 ```
 
 ### Release image archives
@@ -63,10 +63,10 @@ git push origin v1.2.0
 Download the archive for the target architecture, verify it against `SHA256SUMS-v1.2.0.txt`, and load it:
 
 ```sh
-gzip -dc nexus-proxy-ui-v1.2.0-linux-amd64.tar.gz | docker load
-docker run --name nexus-proxy-ui -d --restart unless-stopped \
+gzip -dc docker-clash-v1.2.0-linux-amd64.tar.gz | docker load
+docker run --name docker-clash -d --restart unless-stopped \
   -p 9080:9080 -p 27890:7890/tcp -p 27890:7890/udp \
-  -v nexus-data:/data foliage-sea/nexus-proxy-ui:v1.2.0
+  -v nexus-data:/data foliage-sea/docker-clash:v1.2.0
 ```
 
 The workflow can also be run manually for an existing version tag from the Actions page.

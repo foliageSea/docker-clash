@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/foliageSea/nexus-proxy-ui/internal/core"
-	"github.com/foliageSea/nexus-proxy-ui/internal/model"
-	"github.com/foliageSea/nexus-proxy-ui/internal/store"
+	"github.com/foliageSea/docker-clash/internal/core"
+	"github.com/foliageSea/docker-clash/internal/model"
+	"github.com/foliageSea/docker-clash/internal/store"
 	"github.com/gin-gonic/gin"
 )
 

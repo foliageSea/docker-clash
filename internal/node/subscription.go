@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/foliageSea/nexus-proxy-ui/internal/model"
+	"github.com/foliageSea/docker-clash/internal/model"
 	"gopkg.in/yaml.v3"
 )
 
@@ -37,7 +37,7 @@ func importURL(source string) ([]model.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "NexusProxyUI/1.0 mihomo")
+		req.Header.Set("User-Agent", "DockerClash/1.0 mihomo")
 	resp, err := subscriptionClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("download subscription: %w", err)

@@ -11,8 +11,8 @@ WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-COPY --from=web /src/cmd/nexus/webdist ./cmd/nexus/webdist
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/nexus ./cmd/nexus
+COPY --from=web /src/cmd/webdist ./cmd/webdist
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/nexus ./cmd
 
 FROM alpine:3.22 AS core
 ARG TARGETARCH

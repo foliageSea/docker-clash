@@ -6,6 +6,6 @@ import path from 'node:path'
 export default defineConfig({
   plugins: [vue(), tailwindcss()],
   resolve: { alias: { '@': path.resolve(__dirname, './src') } },
-  build: { outDir: '../cmd/nexus/webdist', emptyOutDir: true },
+  build: { outDir: '../cmd/webdist', emptyOutDir: true },
   server: { proxy: { '/api': 'http://127.0.0.1:9080' } },
 })

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/foliageSea/nexus-proxy-ui/internal/model"
+	"github.com/foliageSea/docker-clash/internal/model"
 )
 
 type Store struct {

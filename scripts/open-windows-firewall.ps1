@@ -9,10 +9,10 @@ if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administra
     throw "Run this script from an elevated PowerShell window (Run as administrator)."
 }
 
-$group = "Nexus Proxy UI"
+$group = "Docker Clash"
 $rules = @(
-    @{ Name = "Nexus Proxy UI Mixed TCP $Port"; Protocol = "TCP" },
-    @{ Name = "Nexus Proxy UI Mixed UDP $Port"; Protocol = "UDP" }
+    @{ Name = "Docker Clash Mixed TCP $Port"; Protocol = "TCP" },
+    @{ Name = "Docker Clash Mixed UDP $Port"; Protocol = "UDP" }
 )
 
 foreach ($rule in $rules) {
@@ -29,4 +29,4 @@ foreach ($rule in $rules) {
         -RemoteAddress LocalSubnet | Out-Null
 }
 
-Write-Output "Allowed local-subnet access to Nexus mixed proxy port $Port (TCP/UDP)."
+Write-Output "Allowed local-subnet access to Docker Clash mixed proxy port $Port (TCP/UDP)."

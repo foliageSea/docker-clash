@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/foliageSea/nexus-proxy-ui/internal/model"
+	"github.com/foliageSea/docker-clash/internal/model"
 )
 
 func TestOpenLegacyStateWithoutEntryGroups(t *testing.T) {

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/foliageSea/nexus-proxy-ui/internal/model"
+	"github.com/foliageSea/docker-clash/internal/model"
 	"gopkg.in/yaml.v3"
 	"strings"
 	"testing"

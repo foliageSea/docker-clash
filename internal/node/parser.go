@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/foliageSea/nexus-proxy-ui/internal/model"
+	"github.com/foliageSea/docker-clash/internal/model"
 )
 
 func Parse(raw string) (model.Node, error) {
