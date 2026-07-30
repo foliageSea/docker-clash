@@ -12,7 +12,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 COPY --from=web /src/cmd/webdist ./cmd/webdist
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/nexus ./cmd
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/docker-clash ./cmd
 
 FROM alpine:3.22 AS core
 ARG TARGETARCH
@@ -29,14 +29,14 @@ RUN apk add --no-cache ca-certificates curl gzip \
     && chmod 0755 /mihomo
 
 FROM alpine:3.22
-RUN apk add --no-cache ca-certificates tzdata && addgroup -S nexus && adduser -S -G nexus -h /app nexus
+RUN apk add --no-cache ca-certificates tzdata && addgroup -S docker-clash && adduser -S -G docker-clash -h /app docker-clash
 WORKDIR /app
-COPY --from=app /out/nexus /app/nexus
+COPY --from=app /out/docker-clash /app/docker-clash
 COPY --from=core /mihomo /app/bin/mihomo
-RUN mkdir /data && chown nexus:nexus /data
-USER nexus
-ENV NEXUS_DATA_DIR=/data MIHOMO_BINARY=/app/bin/mihomo NEXUS_LISTEN=0.0.0.0:9080 GIN_MODE=release
+RUN mkdir /data && chown docker-clash:docker-clash /data
+USER docker-clash
+ENV DOCKER_CLASH_DATA_DIR=/data MIHOMO_BINARY=/app/bin/mihomo DOCKER_CLASH_LISTEN=0.0.0.0:9080 GIN_MODE=release
 EXPOSE 9080 7890
 VOLUME ["/data"]
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 CMD wget -qO- http://127.0.0.1:9080/api/status >/dev/null || exit 1
-ENTRYPOINT ["/app/nexus"]
+ENTRYPOINT ["/app/docker-clash"]

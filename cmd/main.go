@@ -23,7 +23,7 @@ import (
 var web embed.FS
 
 func main() {
-	dataDir := env("NEXUS_DATA_DIR", "./data")
+	dataDir := env("DOCKER_CLASH_DATA_DIR", "./data")
 	binary := env("MIHOMO_BINARY", filepath.Join(".", "bin", binaryName()))
 	s, err := store.Open(filepath.Join(dataDir, "state.json"))
 	if err != nil {
@@ -37,7 +37,7 @@ func main() {
 	r.Use(gin.Logger(), gin.Recovery())
 	api.New(s, m).Register(r.Group("/api"))
 	serveSPA(r)
-	srv := &http.Server{Addr: env("NEXUS_LISTEN", s.Get().Settings.Listen), Handler: r, ReadHeaderTimeout: 5 * time.Second}
+	srv := &http.Server{Addr: env("DOCKER_CLASH_LISTEN", s.Get().Settings.Listen), Handler: r, ReadHeaderTimeout: 5 * time.Second}
 	go func() {
 		log.Printf("Docker Clash listening on http://%s", srv.Addr)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {

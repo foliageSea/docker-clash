@@ -56,12 +56,12 @@ func TestRender(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(b), "name: edge") || !strings.Contains(string(b), "MATCH,NEXUS") {
+	if !strings.Contains(string(b), "name: edge") || !strings.Contains(string(b), "MATCH,DOCKER_CLASH") {
 		t.Fatalf("unexpected config: %s", b)
 	}
 }
 
-func TestRenderEntryGroupsBeforeNexus(t *testing.T) {
+func TestRenderEntryGroupsBeforeDockerClash(t *testing.T) {
 	s := model.DefaultState()
 	s.Nodes = []model.Node{
 		{ID: "n1", Name: "first", Type: "ss", Server: "one", Port: 1},
@@ -87,7 +87,7 @@ func TestRenderEntryGroupsBeforeNexus(t *testing.T) {
 	if err := yaml.Unmarshal(b, &rendered); err != nil {
 		t.Fatal(err)
 	}
-	if len(rendered.Groups) != 3 || rendered.Groups[0].Name != "manual" || rendered.Groups[1].Name != "auto" || rendered.Groups[2].Name != "NEXUS" {
+	if len(rendered.Groups) != 3 || rendered.Groups[0].Name != "manual" || rendered.Groups[1].Name != "auto" || rendered.Groups[2].Name != "DOCKER_CLASH" {
 		t.Fatalf("unexpected group order: %+v", rendered.Groups)
 	}
 	if got := rendered.Groups[0].Proxies; len(got) != 2 || got[0] != "second" || got[1] != "first" {
@@ -97,7 +97,7 @@ func TestRenderEntryGroupsBeforeNexus(t *testing.T) {
 		t.Fatalf("fallback options missing: %+v", rendered.Groups[1])
 	}
 	if slicesContain(rendered.Groups[2].Proxies, "manual") || slicesContain(rendered.Groups[2].Proxies, "auto") {
-		t.Fatalf("entry groups leaked into NEXUS: %v", rendered.Groups[2].Proxies)
+		t.Fatalf("entry groups leaked into DOCKER_CLASH: %v", rendered.Groups[2].Proxies)
 	}
 }
 

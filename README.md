@@ -26,10 +26,10 @@ The image includes the pinned Linux mihomo core for `linux/amd64` or `linux/arm6
 To choose another host proxy port:
 
 ```sh
-NEXUS_MIXED_HOST_PORT=27890 docker compose up --build -d
+DOCKER_CLASH_MIXED_HOST_PORT=27890 docker compose up --build -d
 ```
 
-On PowerShell, set `$env:NEXUS_MIXED_HOST_PORT = "27890"` before running Docker Compose.
+On PowerShell, set `$env:DOCKER_CLASH_MIXED_HOST_PORT = "27890"` before running Docker Compose.
 
 ### Local image archive
 
@@ -66,7 +66,7 @@ Download the archive for the target architecture, verify it against `SHA256SUMS-
 gzip -dc docker-clash-v1.2.0-linux-amd64.tar.gz | docker load
 docker run --name docker-clash -d --restart unless-stopped \
   -p 9080:9080 -p 27890:7890/tcp -p 27890:7890/udp \
-  -v nexus-data:/data foliage-sea/docker-clash:v1.2.0
+  -v docker-clash-data:/data foliage-sea/docker-clash:v1.2.0
 ```
 
 The workflow can also be run manually for an existing version tag from the Actions page.

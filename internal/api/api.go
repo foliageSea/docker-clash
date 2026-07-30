@@ -310,7 +310,7 @@ func (a *API) selectNode(c *gin.Context) {
 	}
 	name := s.Nodes[idx].Name
 	if a.core.Status().Running {
-		if err := a.client.Select("NEXUS", name); err != nil {
+		if err := a.client.Select("DOCKER_CLASH", name); err != nil {
 			fail(c, 502, err)
 			return
 		}

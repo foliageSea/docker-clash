@@ -15,7 +15,7 @@ func Validate(state model.State) error {
 	if state.Settings.MixedPort < 1 || state.Settings.MixedPort > 65535 {
 		return fmt.Errorf("mixed port must be between 1 and 65535")
 	}
-	reserved := map[string]bool{"NEXUS": true, "DIRECT": true, "REJECT": true, "PASS": true, "GLOBAL": true, "COMPATIBLE": true}
+	reserved := map[string]bool{"DOCKER_CLASH": true, "DIRECT": true, "REJECT": true, "PASS": true, "GLOBAL": true, "COMPATIBLE": true}
 	names := map[string]string{}
 	nodeNamesByID := map[string]string{}
 	for _, n := range state.Nodes {
@@ -159,12 +159,12 @@ func Render(state model.State, controller, secret string) ([]byte, error) {
 		}
 		groups = append(groups, group)
 	}
-	nexusMembers := append([]string(nil), names...)
-	if idx := slices.Index(nexusMembers, state.Settings.SelectedNode); idx > 0 {
-		nexusMembers[0], nexusMembers[idx] = nexusMembers[idx], nexusMembers[0]
+	dockerClashMembers := append([]string(nil), names...)
+	if idx := slices.Index(dockerClashMembers, state.Settings.SelectedNode); idx > 0 {
+		dockerClashMembers[0], dockerClashMembers[idx] = dockerClashMembers[idx], dockerClashMembers[0]
 	}
-	groups = append(groups, map[string]any{"name": "NEXUS", "type": "select", "proxies": append(nexusMembers, "DIRECT")})
-	cfg := map[string]any{"mixed-port": state.Settings.MixedPort, "allow-lan": state.Settings.AllowLAN, "bind-address": state.Settings.BindAddress, "mode": "rule", "log-level": "info", "external-controller": controller, "secret": secret, "profile": map[string]any{"store-selected": true}, "proxies": proxies, "proxy-groups": groups, "rules": []string{"MATCH,NEXUS"}}
+	groups = append(groups, map[string]any{"name": "DOCKER_CLASH", "type": "select", "proxies": append(dockerClashMembers, "DIRECT")})
+	cfg := map[string]any{"mixed-port": state.Settings.MixedPort, "allow-lan": state.Settings.AllowLAN, "bind-address": state.Settings.BindAddress, "mode": "rule", "log-level": "info", "external-controller": controller, "secret": secret, "profile": map[string]any{"store-selected": true}, "proxies": proxies, "proxy-groups": groups, "rules": []string{"MATCH,DOCKER_CLASH"}}
 	return yaml.Marshal(cfg)
 }
 

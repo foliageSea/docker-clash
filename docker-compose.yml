@@ -1,5 +1,5 @@
 services:
-  nexus:
+  docker-clash:
     build:
       context: .
       args:
@@ -8,10 +8,10 @@ services:
     restart: unless-stopped
     ports:
       - "9080:9080"
-      - "${NEXUS_MIXED_HOST_PORT:-27890}:7890/tcp"
-      - "${NEXUS_MIXED_HOST_PORT:-27890}:7890/udp"
+      - "${DOCKER_CLASH_MIXED_HOST_PORT:-27890}:7890/tcp"
+      - "${DOCKER_CLASH_MIXED_HOST_PORT:-27890}:7890/udp"
     volumes:
-      - nexus-data:/data
+      - docker-clash-data:/data
 
 volumes:
-  nexus-data:
+  docker-clash-data:

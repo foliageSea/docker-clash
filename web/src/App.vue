@@ -309,7 +309,7 @@ onMounted(load)
         <div class="section-head">
           <div>
             <h3>快速节点选择</h3>
-            <p>当前流量将通过 NEXUS 策略组转发</p>
+            <p>当前流量将通过 DOCKER_CLASH 策略组转发</p>
           </div>
           <Button size="sm" @click="view = 'nodes'">管理节点<ChevronRight :size="15" /></Button>
         </div>
