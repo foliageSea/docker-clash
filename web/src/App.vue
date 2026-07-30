@@ -7,6 +7,7 @@ import {
   CircleGauge,
   GitBranch,
   Link2,
+  Menu,
   Pencil,
   Network,
   Plus,
@@ -43,6 +44,7 @@ const view = ref<View>('overview'),
     bindAddress: '*',
   })
 const busy = ref(false),
+  sidebarCollapsed = ref(false),
   showImport = ref(false),
   showGroupDialog = ref(false),
   editingGroupId = ref<string>(),
@@ -67,6 +69,10 @@ const nav = [
   { id: 'settings', label: '网络设置', icon: Network },
   { id: 'core', label: '内核', icon: Activity },
 ] as const
+const navGroups = [
+  { label: '工作区', items: nav.slice(0, 3) },
+  { label: '系统', items: nav.slice(3) },
+]
 async function load() {
   try {
     ;[status.value, nodes.value, settings.value, entryGroups.value] = await Promise.all([
@@ -199,39 +205,61 @@ onMounted(load)
 
 <template>
   <Toaster position="top-right" rich-colors close-button />
-  <div class="shell">
+  <div :class="['shell', { 'sidebar-collapsed': sidebarCollapsed }]">
     <aside class="sidebar">
       <div class="brand">
-        <div class="mark"><Cable :size="19" /></div>
-        <div><strong>Nexus</strong><span>Proxy console</span></div>
+        <div class="mark"><Cable :size="18" /></div>
+        <div class="brand-copy"><strong>Docker Clash</strong><span>Proxy control plane</span></div>
       </div>
+      <div class="sidebar-section-label">导航</div>
       <nav>
-        <button
-          v-for="item in nav"
-          :key="item.id"
-          :class="{ active: view === item.id }"
-          @click="view = item.id"
-        >
-          <component :is="item.icon" :size="18" /><span>{{ item.label }}</span>
-        </button>
+        <div v-for="group in navGroups" :key="group.label" class="nav-group">
+          <span class="nav-group-label">{{ group.label }}</span>
+          <button
+            v-for="item in group.items"
+            :key="item.id"
+            :class="{ active: view === item.id }"
+            :title="sidebarCollapsed ? item.label : undefined"
+            @click="view = item.id"
+          >
+            <component :is="item.icon" :size="17" /><span>{{ item.label }}</span>
+          </button>
+        </div>
       </nav>
       <div class="core-state">
         <span :class="['pulse', status?.core.running ? 'online' : '']"></span>
-        <div>
+        <div class="core-copy">
           <strong>{{ status?.core.running ? '内核运行中' : '内核已停止' }}</strong
           ><small>{{ status?.core.pid ? `PID ${status.core.pid}` : 'mihomo core' }}</small>
         </div>
       </div>
     </aside>
     <main>
-      <header>
+      <header class="topbar">
+        <div class="topbar-leading">
+          <button
+            class="icon-button sidebar-toggle"
+            title="折叠导航"
+            @click="sidebarCollapsed = !sidebarCollapsed"
+          >
+            <Menu :size="18" />
+          </button>
+          <div class="breadcrumbs">
+            <span>Docker Clash</span><ChevronRight :size="14" /><strong>{{
+              nav.find((x) => x.id === view)?.label
+            }}</strong>
+          </div>
+        </div>
+      </header>
+      <header class="page-heading">
         <div>
-          <p class="eyebrow">NEXUS CONTROL PLANE</p>
+          <p class="eyebrow">CONTROL CENTER / {{ view.toUpperCase() }}</p>
           <h1>{{ nav.find((x) => x.id === view)?.label }}</h1>
         </div>
-        <Button variant="outline" size="icon" title="刷新" @click="load"
-          ><RefreshCw :size="17"
-        /></Button>
+        <div class="page-heading-state">
+          <span :class="['status-dot', status?.core.running ? 'online' : '']"></span
+          >{{ status?.core.running ? '服务正常' : '服务未运行' }}
+        </div>
       </header>
       <section v-if="view === 'overview'" class="overview">
         <div class="hero-status">
@@ -509,7 +537,7 @@ onMounted(load)
         <div class="form-grid">
           <label
             ><span>管理界面监听地址</span><Input v-model="settings.listen" /><small
-              >更改此项需要手动重启 Nexus 服务</small
+              >更改此项需要手动重启 Docker Clash 服务</small
             ></label
           ><label
             ><span>Mixed 代理端口</span
@@ -545,7 +573,7 @@ onMounted(load)
         <div class="section-head">
           <div>
             <h3>mihomo 内核</h3>
-            <p>由 Nexus 子进程管理器托管</p>
+            <p>由 Docker Clash 子进程管理器托管</p>
           </div>
         </div>
         <div class="core-card">
