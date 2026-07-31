@@ -7,6 +7,7 @@ import {
   CircleGauge,
   GitBranch,
   Link2,
+  LocateFixed,
   Menu,
   Pencil,
   Network,
@@ -149,6 +150,12 @@ async function testAllDelays() {
   testingNodeIds.value = new Set()
   if (failures) toast.error(`测试完成，${targets.length - failures} 个成功，${failures} 个失败`)
   else toast.success(`全部 ${targets.length} 个节点测试完成`)
+}
+function jumpToDefaultNode() {
+  if (!selected.value) return
+  document
+    .getElementById('default-node-row')
+    ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 }
 async function setDialer(n: Node, value: string) {
   const copy = { ...n, dialerProxy: value || undefined }
@@ -339,6 +346,13 @@ onMounted(load)
           <div class="button-row">
             <Button
               variant="outline"
+              :disabled="busy || !selected"
+              title="跳转到当前默认节点"
+              @click="jumpToDefaultNode"
+              ><LocateFixed :size="16" />跳转默认</Button
+            >
+            <Button
+              variant="outline"
               :disabled="!nodes.length || testingNodeIds.size > 0"
               @click="testAllDelays"
               ><Activity :size="16" />一键测试</Button
@@ -360,7 +374,11 @@ onMounted(load)
               </tr>
             </thead>
             <tbody>
-              <tr v-for="n in nodes" :key="n.id">
+              <tr
+                v-for="n in nodes"
+                :id="n.name === settings.selectedNode ? 'default-node-row' : undefined"
+                :key="n.id"
+              >
                 <td>
                   <div class="node-name">
                     <i :class="{ active: n.name === settings.selectedNode }"></i
