@@ -505,6 +505,12 @@ tr:last-child td {
     monospace;
   cursor: pointer;
 }
+.delay-column {
+  width: 92px;
+  min-width: 92px;
+  max-width: 92px;
+  white-space: nowrap;
+}
 .delay:disabled {
   color: #8a918c;
   cursor: wait;

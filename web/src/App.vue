@@ -368,7 +368,7 @@ onMounted(load)
                 <th>节点</th>
                 <th>协议</th>
                 <th>服务器</th>
-                <th>延迟</th>
+                <th class="delay-column">延迟</th>
                 <th>链路入口</th>
                 <th></th>
               </tr>
@@ -389,7 +389,7 @@ onMounted(load)
                   <span class="tag">{{ n.type }}</span>
                 </td>
                 <td class="mono">{{ n.server }}:{{ n.port }}</td>
-                <td>
+                <td class="delay-column">
                   <button class="delay" :disabled="testingNodeIds.has(n.id)" @click="testDelay(n)">
                     {{
                       testingNodeIds.has(n.id)
