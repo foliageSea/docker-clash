@@ -5,11 +5,11 @@ services:
       args:
         MIHOMO_VERSION: v1.19.28
     image: foliage-sea/docker-clash:local
+    container_name: docker-clash
     restart: unless-stopped
     ports:
       - "9080:9080"
-      - "${DOCKER_CLASH_MIXED_HOST_PORT:-27890}:7890/tcp"
-      - "${DOCKER_CLASH_MIXED_HOST_PORT:-27890}:7890/udp"
+      - "27890:7890"
     volumes:
       - docker-clash-data:/data
 
