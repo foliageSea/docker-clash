@@ -271,16 +271,16 @@ onMounted(load)
               nav.find((x) => x.id === view)?.label
             }}</strong>
           </div>
-          <button
-            class="icon-button theme-toggle"
-            :title="darkMode ? '切换到浅色模式' : '切换到暗色模式'"
-            :aria-label="darkMode ? '切换到浅色模式' : '切换到暗色模式'"
-            @click="toggleTheme"
-          >
-            <Sun v-if="darkMode" :size="17" />
-            <Moon v-else :size="17" />
-          </button>
         </div>
+        <button
+          class="icon-button theme-toggle"
+          :title="darkMode ? '切换到浅色模式' : '切换到暗色模式'"
+          :aria-label="darkMode ? '切换到浅色模式' : '切换到暗色模式'"
+          @click="toggleTheme"
+        >
+          <Sun v-if="darkMode" :size="17" />
+          <Moon v-else :size="17" />
+        </button>
       </header>
       <header class="page-heading">
         <div>
