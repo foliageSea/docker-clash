@@ -9,6 +9,7 @@ import {
   Link2,
   LocateFixed,
   Menu,
+  Moon,
   Pencil,
   Network,
   Plus,
@@ -17,12 +18,20 @@ import {
   Save,
   Server,
   Settings as SettingsIcon,
+  Sun,
   Trash2,
   X,
 } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  NumberField,
+  NumberFieldContent,
+  NumberFieldDecrement,
+  NumberFieldIncrement,
+  NumberFieldInput,
+} from '@/components/ui/number-field'
 import { Toaster } from '@/components/ui/sonner'
 import {
   api,
@@ -45,6 +54,7 @@ const view = ref<View>('overview'),
     bindAddress: '*',
   })
 const busy = ref(false),
+  darkMode = ref(document.documentElement.classList.contains('dark')),
   sidebarCollapsed = ref(false),
   showImport = ref(false),
   showGroupDialog = ref(false),
@@ -74,6 +84,11 @@ const navGroups = [
   { label: '工作区', items: nav.slice(0, 3) },
   { label: '系统', items: nav.slice(3) },
 ]
+function toggleTheme() {
+  darkMode.value = !darkMode.value
+  document.documentElement.classList.toggle('dark', darkMode.value)
+  localStorage.setItem('theme', darkMode.value ? 'dark' : 'light')
+}
 async function load() {
   try {
     ;[status.value, nodes.value, settings.value, entryGroups.value] = await Promise.all([
@@ -211,7 +226,7 @@ onMounted(load)
 </script>
 
 <template>
-  <Toaster position="top-right" rich-colors close-button />
+  <Toaster :theme="darkMode ? 'dark' : 'light'" position="top-right" rich-colors close-button />
   <div :class="['shell', { 'sidebar-collapsed': sidebarCollapsed }]">
     <aside class="sidebar">
       <div class="brand">
@@ -256,6 +271,15 @@ onMounted(load)
               nav.find((x) => x.id === view)?.label
             }}</strong>
           </div>
+          <button
+            class="icon-button theme-toggle"
+            :title="darkMode ? '切换到浅色模式' : '切换到暗色模式'"
+            :aria-label="darkMode ? '切换到浅色模式' : '切换到暗色模式'"
+            @click="toggleTheme"
+          >
+            <Sun v-if="darkMode" :size="17" />
+            <Moon v-else :size="17" />
+          </button>
         </div>
       </header>
       <header class="page-heading">
@@ -558,10 +582,21 @@ onMounted(load)
               >更改此项需要手动重启 Docker Clash 服务</small
             ></label
           ><label
-            ><span>Mixed 代理端口</span
-            ><Input v-model="settings.mixedPort" type="number" :min="1" :max="65535" /><small
-              >同时接受 HTTP 与 SOCKS5</small
-            ></label
+            ><span>Mixed 代理端口</span>
+            <NumberField
+              v-model="settings.mixedPort"
+              class="port-number-field"
+              :min="1"
+              :max="65535"
+              :step="1"
+            >
+              <NumberFieldContent>
+                <NumberFieldDecrement aria-label="端口减一" />
+                <NumberFieldInput aria-label="Mixed 代理端口" />
+                <NumberFieldIncrement aria-label="端口加一" />
+              </NumberFieldContent>
+            </NumberField>
+            <small>同时接受 HTTP 与 SOCKS5</small></label
           ><label
             ><span>内核绑定地址</span
             ><Input v-model="settings.bindAddress" :disabled="!settings.allowLan" /><small

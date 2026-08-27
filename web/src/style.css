@@ -1414,6 +1414,9 @@ main {
   .sidebar-collapsed {
     display: block;
   }
+  .sidebar {
+    width: 100%;
+  }
   .sidebar-collapsed .sidebar {
     width: 100%;
   }
@@ -1472,4 +1475,187 @@ main {
   .page-heading-state {
     display: none;
   }
+}
+
+/* Dark theme overrides for the application-specific dashboard surfaces. */
+.dark {
+  color-scheme: dark;
+}
+.dark body,
+.dark .shell {
+  background: #0f1218;
+  color: #e5e7eb;
+}
+.dark .sidebar {
+  background: #151922;
+  color: #a8b0bd;
+  border-right-color: #292f3a;
+}
+.dark .brand strong,
+.dark .page-heading h1 {
+  color: #f8fafc;
+}
+.dark .brand span,
+.dark .sidebar-section-label,
+.dark .nav-group-label,
+.dark .breadcrumbs,
+.dark .eyebrow {
+  color: #6f7a8b;
+}
+.dark .sidebar nav button {
+  color: #929cab;
+}
+.dark .sidebar nav button:hover {
+  background: #202631;
+  color: #e5e7eb;
+}
+.dark .sidebar nav button.active {
+  background: #17243b;
+  color: #7eb0ff;
+}
+.dark .core-state,
+.dark .topbar,
+.dark .chain-section-head {
+  border-color: #292f3a;
+}
+.dark .core-state strong,
+.dark .breadcrumbs strong {
+  color: #d5dae2;
+}
+.dark .topbar {
+  background: #11151dcc;
+}
+.dark .icon-button {
+  color: #98a2b3;
+}
+.dark .icon-button:hover {
+  border-color: #343b47;
+  background: #202631;
+  color: #f1f5f9;
+}
+.theme-toggle {
+  margin-left: auto;
+}
+.dark .page-heading-state,
+.dark .section-head p,
+.dark .chain-list label > span,
+.dark .form-grid label > small,
+.dark .switch-row div > small,
+.dark .dialog-head p,
+.dark .member-options small,
+.dark .empty {
+  color: #8993a2;
+}
+.dark .metrics,
+.dark .node-strip > button,
+.dark .table-wrap,
+.dark .entry-group-card,
+.dark .chain-list article,
+.dark .form-grid,
+.dark .core-card,
+.dark .member-options {
+  background: #171c24;
+  border-color: #303743;
+}
+.dark .metrics article,
+.dark .metrics article:last-child,
+.dark .form-grid > label,
+.dark .form-grid > label:nth-child(odd),
+.dark td,
+.dark .member-options > label,
+.dark .member-options > label:nth-child(odd) {
+  border-color: #2a313c;
+}
+.dark .metrics span,
+.dark .metrics small,
+.dark .node-strip small,
+.dark .entry-group-main small,
+.dark .fallback-summary span,
+.dark .fallback-summary small,
+.dark .group-selection span,
+.dark .chain-node small,
+.dark .core-card small {
+  color: #8993a2;
+}
+.dark .node-strip > button:hover,
+.dark tbody tr:hover {
+  background: #1c222c;
+}
+.dark .node-strip button.selected {
+  border-color: #577fc0;
+  box-shadow: inset 0 0 0 1px #577fc0;
+}
+.dark .protocol,
+.dark .tag,
+.dark .group-mode,
+.dark .core-icon {
+  background: #262d38;
+  color: #c3cad5;
+}
+.dark .group-mode.fallback {
+  background: #203247;
+  color: #a9c9ec;
+}
+.dark .group-tag,
+.dark .core-icon.running {
+  background: #293515;
+  color: #c6db69;
+}
+.dark th {
+  background: #1c222c;
+  color: #8f99a8;
+  border-color: #303743;
+}
+.dark .mono {
+  color: #b1bac7;
+}
+.dark .delay {
+  color: #a9c9ff;
+}
+.dark .group-selection select,
+.dark .group-form select,
+.dark .chain-list select,
+.dark .input,
+.dark .dialog textarea {
+  background: #11161e;
+  border-color: #39414e;
+  color: #e5e7eb;
+}
+.dark .group-selection select:focus,
+.dark .group-form select:focus,
+.dark .input:focus,
+.dark .dialog textarea:focus {
+  border-color: #5f8dd3;
+  box-shadow: 0 0 0 3px #3b82f633;
+}
+.dark .group-empty {
+  background: #141920;
+  border-color: #39414e;
+}
+.dark .switch-row button {
+  background: #46505e;
+}
+.dark .switch-row button.on {
+  background: #4d7bc4;
+}
+.dark .warning {
+  background: #292514;
+  border-color: #554b22;
+  color: #e7d78f;
+}
+.dark .dialog {
+  background: #171c24;
+  color: #e5e7eb;
+  border: 1px solid #303743;
+}
+.dark .modal-backdrop {
+  background: #05070bb8;
+}
+.dark .port-number-field [data-slot='input'] {
+  background: #11161e;
+  border-color: #39414e;
+}
+.dark .port-number-field [data-slot='decrement'],
+.dark .port-number-field [data-slot='increment'] {
+  border-color: #39414e;
 }
