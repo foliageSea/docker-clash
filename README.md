@@ -23,13 +23,15 @@ docker compose up --build -d
 
 The image includes the pinned Linux mihomo core for `linux/amd64` or `linux/arm64`. UI is exposed on port `9080`. The container mixed port `7890` is published as host port `27890` by default to avoid conflicts with local proxy clients and common Windows reserved ranges. LAN access is enabled by default for new installations and can be disabled in Network Settings.
 
-To choose another host proxy port:
+To choose another host proxy port, set the same port in Network Settings under **External proxy port** after the container starts:
 
 ```sh
-DOCKER_CLASH_MIXED_HOST_PORT=27890 docker compose up --build -d
+DOCKER_CLASH_MIXED_HOST_PORT=39000 docker compose up --build -d
 ```
 
-On PowerShell, set `$env:DOCKER_CLASH_MIXED_HOST_PORT = "27890"` before running Docker Compose.
+On PowerShell, set `$env:DOCKER_CLASH_MIXED_HOST_PORT = "39000"` before running Docker Compose.
+
+Docker applies port publishing when the container is created. After changing this variable, recreate the service with the same command, then set Network Settings > External proxy port to the same host port. The internal mixed port remains `7890` unless you change it separately.
 
 ### Local image archive
 
@@ -78,6 +80,8 @@ Docker publishes the proxy port on the Windows host, but Windows Firewall can st
 ```powershell
 .\scripts\open-windows-firewall.ps1
 ```
+
+For a custom host port, pass the same port explicitly, for example `.\scripts\open-windows-firewall.ps1 -Port 39000`.
 
 LAN clients then use the Windows host address, for example `10.10.60.20:27890`, not the container address or container port `7890`. The firewall rule only permits `LocalSubnet` sources.
 

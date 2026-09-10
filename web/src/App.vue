@@ -5,6 +5,7 @@ import {
   Cable,
   ChevronRight,
   CircleGauge,
+  Copy,
   GitBranch,
   Link2,
   LocateFixed,
@@ -52,6 +53,8 @@ const view = ref<View>('overview'),
     mixedPort: 7890,
     allowLan: true,
     bindAddress: '*',
+    externalAddress: '',
+    externalPort: 27890,
   })
 const busy = ref(false),
   darkMode = ref(document.documentElement.classList.contains('dark')),
@@ -71,6 +74,12 @@ const emptyGroup: EntryGroupInput = {
 }
 const groupDraft = ref<EntryGroupInput>({ ...emptyGroup, nodeIds: [] })
 const selected = computed(() => nodes.value.find((n) => n.name === settings.value.selectedNode))
+const proxyEndpoints = computed(() => {
+  const address = settings.value.externalAddress.trim()
+  if (!address) return []
+  const endpoint = `${address}:${settings.value.externalPort || settings.value.mixedPort}`
+  return [endpoint, `http://${endpoint}`]
+})
 const nodeById = computed(() => new Map(nodes.value.map((node) => [node.id, node])))
 const entryGroupNames = computed(() => new Set(entryGroups.value.map((group) => group.name)))
 const nav = [
@@ -119,6 +128,14 @@ async function importURI() {
   await run(() => api.importNode(uri.value), '节点或订阅已导入')
   uri.value = ''
   showImport.value = false
+}
+async function copyProxyEndpoint(endpoint: string) {
+  try {
+    await navigator.clipboard.writeText(endpoint)
+    toast.success('代理地址已复制')
+  } catch {
+    toast.error('复制失败，请检查浏览器剪贴板权限')
+  }
 }
 async function clearNodes() {
   if (confirm(`确定清空全部 ${nodes.value.length} 个节点吗？此操作不可撤销。`))
@@ -337,6 +354,24 @@ onMounted(load)
             ><small>{{ settings.allowLan ? settings.bindAddress : '仅限本机' }}</small>
           </article>
         </div>
+        <div class="proxy-access">
+          <div>
+            <span>外部代理地址</span>
+            <small>{{ settings.externalAddress || '请先在网络设置中配置公网 IP 或域名' }}</small>
+          </div>
+          <div class="proxy-endpoints">
+            <Button
+              v-for="endpoint in proxyEndpoints"
+              :key="endpoint"
+              variant="outline"
+              size="sm"
+              :title="`复制 ${endpoint}`"
+              @click="copyProxyEndpoint(endpoint)"
+            >
+              <Copy :size="14" /><span>{{ endpoint }}</span>
+            </Button>
+          </div>
+        </div>
         <div class="section-head">
           <div>
             <h3>快速节点选择</h3>
@@ -365,7 +400,7 @@ onMounted(load)
         <div class="section-head">
           <div>
             <h3>代理节点</h3>
-            <p>支持 SOCKS5、SS、VMess、VLESS、Trojan、Hysteria2 和 TUIC URI</p>
+            <p>支持 HTTP、SOCKS5、SS、VMess、VLESS、Trojan、Hysteria2 和 TUIC URI</p>
           </div>
           <div class="button-row">
             <Button
@@ -598,6 +633,27 @@ onMounted(load)
             </NumberField>
             <small>同时接受 HTTP 与 SOCKS5</small></label
           ><label
+            ><span>外部访问地址</span
+            ><Input v-model="settings.externalAddress" placeholder="203.0.113.10" /><small
+              >填写公网 IP 或域名，不含协议和端口</small
+            ></label
+          ><label
+            ><span>外部代理端口</span>
+            <NumberField
+              v-model="settings.externalPort"
+              class="port-number-field"
+              :min="1"
+              :max="65535"
+              :step="1"
+            >
+              <NumberFieldContent>
+                <NumberFieldDecrement aria-label="外部代理端口减一" />
+                <NumberFieldInput aria-label="外部代理端口" />
+                <NumberFieldIncrement aria-label="外部代理端口加一" />
+              </NumberFieldContent>
+            </NumberField>
+            <small>须与 Docker 映射到宿主机的端口一致</small></label
+          ><label
             ><span>内核绑定地址</span
             ><Input v-model="settings.bindAddress" :disabled="!settings.allowLan" /><small
               >局域网开放时通常使用 *</small
@@ -663,7 +719,7 @@ onMounted(load)
         <textarea
           v-model="uri"
           autofocus
-          placeholder="https://...、vless://... 或 ss://..."
+          placeholder="203.0.113.10:7890、http://203.0.113.10:7890 或订阅 URI"
         ></textarea>
         <div class="dialog-actions">
           <Button variant="outline" @click="showImport = false">取消</Button

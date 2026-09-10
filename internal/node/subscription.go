@@ -21,6 +21,13 @@ var subscriptionClient = &http.Client{Timeout: 20 * time.Second}
 
 func Import(source string) ([]model.Node, error) {
 	source = strings.TrimSpace(source)
+	if isHTTPProxyEndpoint(source) {
+		n, err := Parse(source)
+		if err != nil {
+			return nil, err
+		}
+		return []model.Node{n}, nil
+	}
 	u, err := url.Parse(source)
 	if err == nil && (u.Scheme == "http" || u.Scheme == "https") {
 		return importURL(source)
@@ -32,12 +39,21 @@ func Import(source string) ([]model.Node, error) {
 	return []model.Node{n}, nil
 }
 
+func isHTTPProxyEndpoint(source string) bool {
+	if !strings.Contains(source, "://") {
+		_, err := parseHTTPProxyEndpoint(source)
+		return err == nil
+	}
+	u, err := url.Parse(source)
+	return err == nil && u.Scheme == "http" && u.Hostname() != "" && u.Port() != "" && u.Path == "" && u.RawQuery == "" && u.Fragment == ""
+}
+
 func importURL(source string) ([]model.Node, error) {
 	req, err := http.NewRequest(http.MethodGet, source, nil)
 	if err != nil {
 		return nil, err
 	}
-		req.Header.Set("User-Agent", "DockerClash/1.0 mihomo")
+	req.Header.Set("User-Agent", "DockerClash/1.0 mihomo")
 	resp, err := subscriptionClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("download subscription: %w", err)

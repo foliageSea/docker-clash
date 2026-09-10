@@ -15,6 +15,9 @@ func Validate(state model.State) error {
 	if state.Settings.MixedPort < 1 || state.Settings.MixedPort > 65535 {
 		return fmt.Errorf("mixed port must be between 1 and 65535")
 	}
+	if state.Settings.ExternalPort < 1 || state.Settings.ExternalPort > 65535 {
+		return fmt.Errorf("external proxy port must be between 1 and 65535")
+	}
 	reserved := map[string]bool{"DOCKER_CLASH": true, "DIRECT": true, "REJECT": true, "PASS": true, "GLOBAL": true, "COMPATIBLE": true}
 	names := map[string]string{}
 	nodeNamesByID := map[string]string{}

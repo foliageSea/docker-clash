@@ -33,3 +33,13 @@ func TestParseYAMLSubscription(t *testing.T) {
 		t.Fatalf("unexpected nodes: %#v", nodes)
 	}
 }
+
+func TestImportHTTPProxyEndpoint(t *testing.T) {
+	nodes, err := Import("http://192.0.2.10:7890")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(nodes) != 1 || nodes[0].Type != "http" || nodes[0].Server != "192.0.2.10" || nodes[0].Port != 7890 {
+		t.Fatalf("unexpected nodes: %#v", nodes)
+	}
+}

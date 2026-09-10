@@ -17,6 +17,9 @@ func Parse(raw string) (model.Node, error) {
 	if strings.HasPrefix(raw, "vmess://") {
 		return parseVMess(strings.TrimPrefix(raw, "vmess://"))
 	}
+	if !strings.Contains(raw, "://") {
+		return parseHTTPProxyEndpoint(raw)
+	}
 	u, err := url.Parse(raw)
 	if err != nil || u.Scheme == "" {
 		return model.Node{}, fmt.Errorf("invalid node URI")
@@ -25,7 +28,7 @@ func Parse(raw string) (model.Node, error) {
 	if typeName == "hy2" {
 		typeName = "hysteria2"
 	}
-	supported := map[string]bool{"ss": true, "socks5": true, "vless": true, "trojan": true, "hysteria2": true, "tuic": true}
+	supported := map[string]bool{"http": true, "ss": true, "socks5": true, "vless": true, "trojan": true, "hysteria2": true, "tuic": true}
 	if !supported[typeName] {
 		return model.Node{}, fmt.Errorf("unsupported protocol %q", u.Scheme)
 	}
@@ -40,6 +43,15 @@ func Parse(raw string) (model.Node, error) {
 	n := model.Node{ID: newID(), Name: name, Type: typeName, Server: u.Hostname(), Port: port, CreatedAt: time.Now().UTC(), Options: map[string]any{}}
 	q := u.Query()
 	switch typeName {
+	case "http":
+		if username := u.User.Username(); username != "" {
+			n.Options["username"] = username
+		}
+		if password, ok := u.User.Password(); ok {
+			n.Options["password"] = password
+		}
+		copyQuery(q, n.Options, "sni", "ip-version")
+		copyBoolQuery(q, n.Options, "tls", "skip-cert-verify")
 	case "ss":
 		if err := parseSSUser(u, &n); err != nil {
 			return model.Node{}, err
@@ -82,6 +94,18 @@ func Parse(raw string) (model.Node, error) {
 		copyQuery(q, n.Options, "sni", "congestion-controller", "udp-relay-mode", "skip-cert-verify")
 	}
 	return n, nil
+}
+
+func parseHTTPProxyEndpoint(raw string) (model.Node, error) {
+	u, err := url.Parse("http://" + raw)
+	if err != nil || u.Hostname() == "" || u.Port() == "" || u.Path != "" || u.RawQuery != "" || u.Fragment != "" {
+		return model.Node{}, fmt.Errorf("invalid node URI")
+	}
+	port, err := strconv.Atoi(u.Port())
+	if err != nil || port < 1 || port > 65535 {
+		return model.Node{}, fmt.Errorf("invalid port")
+	}
+	return model.Node{ID: newID(), Name: "http-" + u.Hostname(), Type: "http", Server: u.Hostname(), Port: port, CreatedAt: time.Now().UTC(), Options: map[string]any{}}, nil
 }
 
 func parseVMess(payload string) (model.Node, error) {

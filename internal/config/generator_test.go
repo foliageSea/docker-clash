@@ -49,6 +49,14 @@ func TestValidateEntryGroupConstraints(t *testing.T) {
 	}
 }
 
+func TestValidateRejectsInvalidExternalProxyPort(t *testing.T) {
+	s := model.DefaultState()
+	s.Settings.ExternalPort = 65536
+	if err := Validate(s); err == nil || !strings.Contains(err.Error(), "external proxy port") {
+		t.Fatalf("expected external port error, got %v", err)
+	}
+}
+
 func TestRender(t *testing.T) {
 	s := model.DefaultState()
 	s.Nodes = []model.Node{{Name: "edge", Type: "ss", Server: "host", Port: 443, Options: map[string]any{"cipher": "aes-128-gcm", "password": "x"}}}

@@ -11,6 +11,7 @@ import (
 const (
 	DefaultEntryGroupTestURL  = "https://www.gstatic.com/generate_204"
 	DefaultEntryGroupInterval = 60
+	DefaultExternalProxyPort  = 27890
 )
 
 type Node struct {
@@ -25,11 +26,13 @@ type Node struct {
 }
 
 type Settings struct {
-	Listen       string `json:"listen"`
-	MixedPort    int    `json:"mixedPort"`
-	AllowLAN     bool   `json:"allowLan"`
-	BindAddress  string `json:"bindAddress"`
-	SelectedNode string `json:"selectedNode,omitempty"`
+	Listen          string `json:"listen"`
+	MixedPort       int    `json:"mixedPort"`
+	AllowLAN        bool   `json:"allowLan"`
+	BindAddress     string `json:"bindAddress"`
+	ExternalAddress string `json:"externalAddress"`
+	ExternalPort    int    `json:"externalPort"`
+	SelectedNode    string `json:"selectedNode,omitempty"`
 }
 
 type EntryGroup struct {
@@ -96,5 +99,5 @@ type State struct {
 }
 
 func DefaultState() State {
-	return State{Settings: Settings{Listen: "127.0.0.1:9080", MixedPort: 7890, AllowLAN: true, BindAddress: "*"}, Nodes: []Node{}, EntryGroups: []EntryGroup{}}
+	return State{Settings: Settings{Listen: "127.0.0.1:9080", MixedPort: 7890, AllowLAN: true, BindAddress: "*", ExternalPort: DefaultExternalProxyPort}, Nodes: []Node{}, EntryGroups: []EntryGroup{}}
 }

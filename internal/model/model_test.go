@@ -13,6 +13,9 @@ func TestDefaultStateAllowsLAN(t *testing.T) {
 	if settings.BindAddress != "*" {
 		t.Fatalf("default bind address = %q, want *", settings.BindAddress)
 	}
+	if settings.ExternalPort != DefaultExternalProxyPort {
+		t.Fatalf("default external port = %d, want %d", settings.ExternalPort, DefaultExternalProxyPort)
+	}
 }
 
 func TestEntryGroupJSONAppliesFallbackDefaults(t *testing.T) {

@@ -31,3 +31,17 @@ func TestParseSOCKS5(t *testing.T) {
 		t.Fatalf("unexpected node: %#v", n)
 	}
 }
+
+func TestParseHTTPProxyEndpoints(t *testing.T) {
+	for _, raw := range []string{"192.0.2.10:7890", "http://192.0.2.10:7890"} {
+		t.Run(raw, func(t *testing.T) {
+			n, err := Parse(raw)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if n.Type != "http" || n.Server != "192.0.2.10" || n.Port != 7890 {
+				t.Fatalf("unexpected node: %#v", n)
+			}
+		})
+	}
+}

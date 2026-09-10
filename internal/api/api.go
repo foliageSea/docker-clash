@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/foliageSea/docker-clash/internal/config"
@@ -340,7 +341,12 @@ func (a *API) updateSettings(c *gin.Context) {
 		fail(c, 400, err)
 		return
 	}
-	if !a.apply(c, func(s *model.State) error { req.SelectedNode = s.Settings.SelectedNode; s.Settings = req; return nil }) {
+	if !a.apply(c, func(s *model.State) error {
+		req.ExternalAddress = strings.TrimSpace(req.ExternalAddress)
+		req.SelectedNode = s.Settings.SelectedNode
+		s.Settings = req
+		return nil
+	}) {
 		return
 	}
 	c.JSON(200, req)

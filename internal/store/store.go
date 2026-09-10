@@ -32,6 +32,10 @@ func Open(path string) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
+	if s.state.Settings.ExternalPort == 0 {
+		s.state.Settings.ExternalPort = model.DefaultExternalProxyPort
+		changed = true
+	}
 	if changed {
 		if err := s.saveLocked(); err != nil {
 			return nil, err

@@ -9,7 +9,8 @@ services:
     restart: unless-stopped
     ports:
       - "9080:9080"
-      - "27890:7890"
+      - "${DOCKER_CLASH_MIXED_HOST_PORT:-27890}:7890/tcp"
+      - "${DOCKER_CLASH_MIXED_HOST_PORT:-27890}:7890/udp"
     volumes:
       - docker-clash-data:/data
 

@@ -341,6 +341,48 @@ h3 {
     monospace;
   color: #929993;
 }
+.proxy-access {
+  min-height: 72px;
+  border: 1px solid #d7dbd7;
+  border-top: 0;
+  background: #fff;
+  padding: 14px 18px 14px 25px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.proxy-access > div:first-child {
+  min-width: 0;
+}
+.proxy-access span,
+.proxy-access small {
+  display: block;
+}
+.proxy-access > div:first-child > span {
+  color: #737b75;
+  font-size: 11px;
+}
+.proxy-access small {
+  margin-top: 5px;
+  color: #525a54;
+  font:
+    11px ui-monospace,
+    monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.proxy-endpoints {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+.proxy-endpoints .btn span {
+  font:
+    11px ui-monospace,
+    monospace;
+}
 .section-head {
   display: flex;
   align-items: flex-end;
@@ -1011,6 +1053,22 @@ tr:last-child td {
     border-right: 0;
     border-bottom: 1px solid #d7dbd7;
   }
+  .proxy-access {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .proxy-endpoints {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .proxy-endpoints .btn {
+    max-width: 100%;
+  }
+  .proxy-endpoints .btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .node-strip {
     grid-template-columns: 1fr;
   }
@@ -1547,6 +1605,7 @@ main {
   color: #8993a2;
 }
 .dark .metrics,
+.dark .proxy-access,
 .dark .node-strip > button,
 .dark .table-wrap,
 .dark .entry-group-card,
@@ -1559,6 +1618,7 @@ main {
 }
 .dark .metrics article,
 .dark .metrics article:last-child,
+.dark .proxy-access,
 .dark .form-grid > label,
 .dark .form-grid > label:nth-child(odd),
 .dark td,
@@ -1568,6 +1628,8 @@ main {
 }
 .dark .metrics span,
 .dark .metrics small,
+.dark .proxy-access > div:first-child > span,
+.dark .proxy-access small,
 .dark .node-strip small,
 .dark .entry-group-main small,
 .dark .fallback-summary span,

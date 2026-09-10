@@ -23,6 +23,8 @@ export interface Settings {
   mixedPort: number
   allowLan: boolean
   bindAddress: string
+  externalAddress: string
+  externalPort: number
   selectedNode?: string
 }
 export interface Status {

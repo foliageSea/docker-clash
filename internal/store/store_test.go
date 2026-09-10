@@ -22,6 +22,9 @@ func TestOpenLegacyStateWithoutEntryGroups(t *testing.T) {
 	if len(s.Get().EntryGroups) != 0 {
 		t.Fatalf("legacy state loaded unexpected entry groups: %+v", s.Get().EntryGroups)
 	}
+	if s.Get().Settings.ExternalPort != model.DefaultExternalProxyPort {
+		t.Fatalf("legacy external port = %d, want %d", s.Get().Settings.ExternalPort, model.DefaultExternalProxyPort)
+	}
 }
 
 func TestOpenNormalizesLegacyDuplicateNodeIDs(t *testing.T) {
