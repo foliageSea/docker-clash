@@ -129,12 +129,24 @@ async function importURI() {
   uri.value = ''
   showImport.value = false
 }
-async function copyProxyEndpoint(endpoint: string) {
+function copyProxyEndpoint(endpoint: string) {
+  const textarea = document.createElement('textarea')
+  textarea.value = endpoint
+  textarea.readOnly = true
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  textarea.style.pointerEvents = 'none'
+  document.body.appendChild(textarea)
+  textarea.select()
+  textarea.setSelectionRange(0, endpoint.length)
+
   try {
-    await navigator.clipboard.writeText(endpoint)
+    if (!document.execCommand('copy')) throw new Error('copy failed')
     toast.success('代理地址已复制')
   } catch {
-    toast.error('复制失败，请检查浏览器剪贴板权限')
+    window.prompt('自动复制失败，请手动复制代理地址：', endpoint)
+  } finally {
+    textarea.remove()
   }
 }
 async function clearNodes() {
