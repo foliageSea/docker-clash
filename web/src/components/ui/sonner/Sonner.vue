@@ -1,16 +1,8 @@
-<script lang="ts" setup>
-import {
-  CircleCheckIcon,
-  InfoIcon,
-  TriangleAlertIcon,
-  OctagonXIcon,
-  Loader2Icon,
-  XIcon,
-} from '@lucide/vue'
-
-import type { ToasterProps } from 'vue-sonner'
-import { Toaster as Sonner } from 'vue-sonner'
-import { cn } from '@/lib/utils'
+<script setup lang="ts">
+import type { ToasterProps } from "vue-sonner"
+import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon, XIcon } from "@lucide/vue"
+import { Toaster as Sonner } from "vue-sonner"
+import { cn } from "@/lib/utils"
 
 const props = defineProps<ToasterProps>()
 </script>
@@ -23,11 +15,6 @@ const props = defineProps<ToasterProps>()
       '--normal-text': 'var(--popover-foreground)',
       '--normal-border': 'var(--border)',
       '--border-radius': 'var(--radius)',
-      '--gray2': 'hsl(var(--popover) / 0.9)',
-      '--gray3': 'var(--border)',
-      '--gray4': 'var(--border)',
-      '--gray5': 'var(--border)',
-      '--gray12': 'var(--popover-foreground)',
     }"
     v-bind="props"
   >
