@@ -15,7 +15,7 @@ import { useConsole } from '@/composables/use-console'
 import { api } from '@/lib/api'
 import type { Node } from '@/types'
 
-const { nodes, settings, busy, run } = useConsole()
+const { nodes, settings, selectedNode, busy, run } = useConsole()
 const importOpen = ref(false)
 const clearOpen = ref(false)
 const uri = ref('')
@@ -56,10 +56,15 @@ async function remove(node: Node) {
 async function clear() {
   await run(api.clearNodes, '全部节点已清空')
 }
+
+function scrollToDefaultNode() {
+  selectedNode.value && document.getElementById(`node-${selectedNode.value.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
 </script>
 
 <template>
   <PageHeader title="代理节点" description="导入、测速并选择默认代理出口">
+    <Button variant="outline" :disabled="!selectedNode" @click="scrollToDefaultNode"><LocateFixedIcon data-icon="inline-start" />跳转默认节点</Button>
     <Button variant="outline" :disabled="!nodes.length || testing.size > 0" @click="testAll"><ActivityIcon data-icon="inline-start" />一键测速</Button>
     <Button variant="destructive" :disabled="!nodes.length || busy" @click="clearOpen = true"><Trash2Icon data-icon="inline-start" />清空</Button>
     <Button @click="importOpen = true"><ImportIcon data-icon="inline-start" />导入节点</Button>
@@ -69,7 +74,7 @@ async function clear() {
     <Table class="min-w-[900px]">
       <TableHeader><TableRow><TableHead>节点</TableHead><TableHead>协议</TableHead><TableHead>服务器</TableHead><TableHead>延迟</TableHead><TableHead>链路入口</TableHead><TableHead class="text-right">操作</TableHead></TableRow></TableHeader>
       <TableBody>
-        <TableRow v-for="node in nodes" :key="node.id">
+        <TableRow v-for="node in nodes" :id="`node-${node.id}`" :key="node.id">
           <TableCell><div class="flex items-center gap-2"><span :class="['size-2 shrink-0 rounded-full', node.name === settings.selectedNode ? 'bg-emerald-500' : 'bg-muted-foreground/40']" /><strong>{{ node.name }}</strong></div></TableCell>
           <TableCell><Badge variant="secondary">{{ node.type }}</Badge></TableCell>
           <TableCell class="font-mono text-xs">{{ node.server }}:{{ node.port }}</TableCell>
