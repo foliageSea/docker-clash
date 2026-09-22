@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PencilIcon, PlusIcon, SaveIcon, Trash2Icon } from '@lucide/vue'
+import { ChevronDownIcon, PencilIcon, PlusIcon, SaveIcon, Trash2Icon } from '@lucide/vue'
 import { ref } from 'vue'
 import { toast } from 'vue-sonner'
 
@@ -20,6 +20,9 @@ const { nodes, entryGroups, nodeById, busy, run } = useConsole()
 const dialogOpen = ref(false)
 const editingId = ref<string>()
 const draft = ref<EntryGroupInput>({ name: '', type: 'select', nodeIds: [], testUrl: '', interval: 60 })
+const dialerOpenId = ref<string>()
+// 与 SelectTrigger 相同的样式，确保占位按钮与真实下拉无布局差异
+const dialerTriggerClass = 'border-input flex h-9 w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30 dark:hover:bg-input/50 [&_svg]:pointer-events-none [&_svg]:shrink-0'
 
 function createGroup() {
   editingId.value = undefined
@@ -59,6 +62,7 @@ async function removeGroup(group: EntryGroup) {
 }
 
 async function setDialer(node: Node, value: string) {
+  dialerOpenId.value = undefined
   await run(() => api.updateNode({ ...node, dialerProxy: value === '__direct__' ? undefined : value }), '节点链路已更新')
 }
 </script>
@@ -94,7 +98,14 @@ async function setDialer(node: Node, value: string) {
     <div class="overflow-hidden rounded-md border">
       <div v-for="node in nodes" :key="node.id" class="grid gap-3 border-b p-4 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_minmax(220px,320px)] sm:items-center">
         <div class="min-w-0"><strong class="block truncate">{{ node.name }}</strong><span class="font-mono text-xs text-muted-foreground">{{ node.server }}:{{ node.port }}</span></div>
-        <Select :model-value="node.dialerProxy || '__direct__'" :disabled="busy" @update:model-value="value => value && setDialer(node, String(value))">
+        <Select
+          v-if="dialerOpenId === node.id"
+          :model-value="node.dialerProxy || '__direct__'"
+          :open="true"
+          :disabled="busy"
+          @update:open="value => { if (!value) dialerOpenId = undefined }"
+          @update:model-value="value => value && setDialer(node, String(value))"
+        >
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectGroup><SelectLabel>直连</SelectLabel><SelectItem value="__direct__">DIRECT</SelectItem></SelectGroup>
@@ -102,6 +113,10 @@ async function setDialer(node: Node, value: string) {
             <SelectGroup><SelectLabel>单节点</SelectLabel><SelectItem v-for="candidate in nodes.filter(item => item.id !== node.id)" :key="candidate.id" :value="candidate.name">{{ candidate.name }}</SelectItem></SelectGroup>
           </SelectContent>
         </Select>
+        <button v-else type="button" :disabled="busy" :class="dialerTriggerClass" @click="dialerOpenId = node.id">
+          <span class="line-clamp-1">{{ node.dialerProxy || 'DIRECT' }}</span>
+          <ChevronDownIcon class="size-4 opacity-50" />
+        </button>
       </div>
       <p v-if="!nodes.length" class="p-10 text-center text-sm text-muted-foreground">导入节点后可配置代理链路</p>
     </div>
