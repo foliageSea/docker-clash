@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { NumberField, NumberFieldContent, NumberFieldDecrement, NumberFieldIncrement, NumberFieldInput } from '@/components/ui/number-field'
 import { Switch } from '@/components/ui/switch'
 import { useConsole } from '@/composables/use-console'
 import { api } from '@/lib/api'
@@ -25,12 +26,24 @@ const { settings, busy, run } = useConsole()
       <FieldGroup>
         <Field><FieldLabel for="listen">管理界面监听地址</FieldLabel><Input id="listen" v-model="settings.listen" /><FieldDescription>修改此项后需要重启 Docker Clash 服务。</FieldDescription></Field>
         <div class="grid gap-6 sm:grid-cols-2">
-          <Field><FieldLabel for="mixed-port">Mixed 代理端口</FieldLabel><Input id="mixed-port" v-model.number="settings.mixedPort" type="number" min="1" max="65535" /><FieldDescription>同时接受 HTTP 与 SOCKS5。</FieldDescription></Field>
-          <Field><FieldLabel for="external-port">外部代理端口</FieldLabel><Input id="external-port" v-model.number="settings.externalPort" type="number" min="1" max="65535" /><FieldDescription>须与 Docker 宿主机映射端口一致。</FieldDescription></Field>
+          <Field>
+            <FieldLabel for="mixed-port">Mixed 代理端口</FieldLabel>
+            <NumberField id="mixed-port" v-model="settings.mixedPort" :min="1" :max="65535" :format-options="{ useGrouping: false }">
+              <NumberFieldContent><NumberFieldDecrement /><NumberFieldInput /><NumberFieldIncrement /></NumberFieldContent>
+            </NumberField>
+            <FieldDescription>同时接受 HTTP 与 SOCKS5。</FieldDescription>
+          </Field>
+          <Field><FieldLabel for="bind-address">内核绑定地址</FieldLabel><Input id="bind-address" v-model="settings.bindAddress" :disabled="!settings.allowLan" /><FieldDescription>局域网开放时通常使用 *。</FieldDescription></Field>
         </div>
         <div class="grid gap-6 sm:grid-cols-2">
           <Field><FieldLabel for="external-address">外部访问地址</FieldLabel><Input id="external-address" v-model="settings.externalAddress" placeholder="203.0.113.10 或 proxy.example.com" /><FieldDescription>不包含协议与端口。</FieldDescription></Field>
-          <Field><FieldLabel for="bind-address">内核绑定地址</FieldLabel><Input id="bind-address" v-model="settings.bindAddress" :disabled="!settings.allowLan" /><FieldDescription>局域网开放时通常使用 *。</FieldDescription></Field>
+          <Field>
+            <FieldLabel for="external-port">外部代理端口</FieldLabel>
+            <NumberField id="external-port" v-model="settings.externalPort" :min="1" :max="65535" :format-options="{ useGrouping: false }">
+              <NumberFieldContent><NumberFieldDecrement /><NumberFieldInput /><NumberFieldIncrement /></NumberFieldContent>
+            </NumberField>
+            <FieldDescription>须与 Docker 宿主机映射端口一致。</FieldDescription>
+          </Field>
         </div>
         <Field orientation="horizontal" class="rounded-md border p-4">
           <FieldContent><FieldLabel for="allow-lan">允许局域网连接</FieldLabel><FieldDescription>允许可信局域网中的设备使用此代理入口。</FieldDescription></FieldContent>

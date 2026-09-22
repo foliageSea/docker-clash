@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import { toast } from 'vue-sonner'
 
 import PageHeader from '@/components/PageHeader.vue'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -16,6 +17,7 @@ import type { Node } from '@/types'
 
 const { nodes, settings, busy, run } = useConsole()
 const importOpen = ref(false)
+const clearOpen = ref(false)
 const uri = ref('')
 const delays = ref<Record<string, number>>({})
 const testing = ref(new Set<string>())
@@ -52,14 +54,14 @@ async function remove(node: Node) {
 }
 
 async function clear() {
-  if (window.confirm(`确定清空全部 ${nodes.value.length} 个节点吗？`)) await run(api.clearNodes, '全部节点已清空')
+  await run(api.clearNodes, '全部节点已清空')
 }
 </script>
 
 <template>
   <PageHeader title="代理节点" description="导入、测速并选择默认代理出口">
     <Button variant="outline" :disabled="!nodes.length || testing.size > 0" @click="testAll"><ActivityIcon data-icon="inline-start" />一键测速</Button>
-    <Button variant="destructive" :disabled="!nodes.length || busy" @click="clear"><Trash2Icon data-icon="inline-start" />清空</Button>
+    <Button variant="destructive" :disabled="!nodes.length || busy" @click="clearOpen = true"><Trash2Icon data-icon="inline-start" />清空</Button>
     <Button @click="importOpen = true"><ImportIcon data-icon="inline-start" />导入节点</Button>
   </PageHeader>
 
@@ -83,8 +85,15 @@ async function clear() {
   <Dialog v-model:open="importOpen">
     <DialogContent>
       <DialogHeader><DialogTitle>导入节点或订阅</DialogTitle><DialogDescription>支持后端可解析的订阅地址和标准代理 URI</DialogDescription></DialogHeader>
-      <Field><FieldLabel for="node-uri">订阅或节点 URI</FieldLabel><Textarea id="node-uri" v-model="uri" rows="5" placeholder="粘贴订阅地址或代理 URI" /><FieldDescription>多个节点可通过订阅内容一次导入。</FieldDescription></Field>
+      <Field class="min-w-0"><FieldLabel for="node-uri">订阅或节点 URI</FieldLabel><Textarea id="node-uri" v-model="uri" rows="5" class="max-w-full" placeholder="粘贴订阅地址或代理 URI" /><FieldDescription>多个节点可通过订阅内容一次导入。</FieldDescription></Field>
       <DialogFooter><Button variant="outline" @click="importOpen = false">取消</Button><Button :disabled="busy || !uri.trim()" @click="importNodes">导入</Button></DialogFooter>
     </DialogContent>
   </Dialog>
+
+  <AlertDialog v-model:open="clearOpen">
+    <AlertDialogContent>
+      <AlertDialogHeader><AlertDialogTitle>清空全部节点</AlertDialogTitle><AlertDialogDescription>确定清空全部 {{ nodes.length }} 个节点吗？此操作不可撤销。</AlertDialogDescription></AlertDialogHeader>
+      <AlertDialogFooter><AlertDialogCancel>取消</AlertDialogCancel><AlertDialogAction variant="destructive" :disabled="busy" @click="clear">清空</AlertDialogAction></AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
 </template>

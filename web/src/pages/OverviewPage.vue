@@ -75,12 +75,12 @@ async function copy(value: string) {
 
     <Card>
       <CardHeader><CardTitle>外部代理地址</CardTitle><CardDescription>供其他设备连接的宿主机入口</CardDescription></CardHeader>
-      <CardContent class="flex flex-col gap-3">
+      <CardContent class="flex flex-1 flex-col gap-3">
         <template v-if="endpoints.length">
           <Button v-for="endpoint in endpoints" :key="endpoint" variant="outline" class="justify-between font-mono" @click="copy(endpoint)"><span class="truncate">{{ endpoint }}</span><CopyIcon /></Button>
         </template>
         <p v-else class="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">请先配置外部访问地址</p>
-        <Button variant="ghost" as-child><RouterLink to="/settings">配置网络<ArrowRightIcon data-icon="inline-end" /></RouterLink></Button>
+        <Button variant="ghost" class="mt-auto" as-child><RouterLink to="/settings">配置网络<ArrowRightIcon data-icon="inline-end" /></RouterLink></Button>
       </CardContent>
     </Card>
   </section>
