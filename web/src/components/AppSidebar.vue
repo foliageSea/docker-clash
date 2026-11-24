@@ -1,40 +1,31 @@
 <script setup lang="ts">
-import { ActivityIcon, CableIcon, GitBranchIcon, LayoutDashboardIcon, NetworkIcon, ServerIcon } from '@lucide/vue'
+import { CableIcon } from '@lucide/vue'
+import { watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent,
-  SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, SidebarSeparator, useSidebar,
+  SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
 } from '@/components/ui/sidebar'
 import { useConsole } from '@/composables/use-console'
+import { navigation } from '@/lib/navigation'
 import { cn } from '@/lib/utils'
 
 const route = useRoute()
-const { setOpenMobile } = useSidebar()
+const { isMobile, setOpenMobile } = useSidebar()
 const { status } = useConsole()
-const groups = [
-  { id: 'proxy', items: [
-    { title: '运行概览', url: '/', icon: LayoutDashboardIcon },
-    { title: '代理节点', url: '/nodes', icon: ServerIcon },
-    { title: '入口与链路', url: '/chains', icon: GitBranchIcon },
-  ] },
-  { id: 'system', items: [
-    { title: '网络设置', url: '/settings', icon: NetworkIcon },
-    { title: '内核管理', url: '/core', icon: ActivityIcon },
-  ] },
-]
+const groups = [...new Set(navigation.map(page => page.group))]
+watch([isMobile, () => route.path], () => setOpenMobile(false))
 </script>
 
 <template>
-  <Sidebar collapsible="icon">
-    <SidebarHeader class="border-b py-2">
+  <Sidebar collapsible="icon" class="h-full border-r-0">
+    <SidebarHeader class="h-20 justify-center px-3 group-data-[collapsible=icon]:items-center">
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" tooltip="Docker Clash" as-child>
             <RouterLink to="/" aria-label="Docker Clash" @click="setOpenMobile(false)">
-              <span class="flex size-8 shrink-0 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-                <CableIcon />
-              </span>
+              <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"><CableIcon class="size-4" aria-hidden="true" /></span>
               <strong class="truncate group-data-[collapsible=icon]:hidden">Docker Clash</strong>
             </RouterLink>
           </SidebarMenuButton>
@@ -42,26 +33,24 @@ const groups = [
       </SidebarMenu>
     </SidebarHeader>
     <SidebarContent>
-      <nav aria-label="主导航" class="flex flex-col gap-1 py-1">
-        <template v-for="(group, index) in groups" :key="group.id">
-          <SidebarSeparator v-if="index > 0" />
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem v-for="item in group.items" :key="item.url">
-                  <SidebarMenuButton as-child :is-active="route.path === item.url" :tooltip="item.title">
-                    <RouterLink :to="item.url" :aria-label="item.title" @click="setOpenMobile(false)">
-                      <component :is="item.icon" /><span class="group-data-[collapsible=icon]:hidden">{{ item.title }}</span>
-                    </RouterLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </template>
+      <nav aria-label="主导航" class="flex flex-col gap-4 px-2.5">
+        <SidebarGroup v-for="group in groups" :key="group" class="gap-1 p-0">
+          <SidebarGroupLabel class="px-2 group-data-[collapsible=icon]:hidden">{{ group }}</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu class="group-data-[collapsible=icon]:items-center">
+              <SidebarMenuItem v-for="page in navigation.filter(item => item.group === group)" :key="page.path">
+                <SidebarMenuButton class="h-11 md:h-9 md:text-xs" as-child :is-active="route.path === page.path" :tooltip="page.label">
+                  <RouterLink :to="page.path" :aria-label="page.label" @click="setOpenMobile(false)">
+                    <component :is="page.icon" aria-hidden="true" /><span class="group-data-[collapsible=icon]:hidden">{{ page.label }}</span>
+                  </RouterLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </nav>
     </SidebarContent>
-    <SidebarFooter v-if="status" class="border-t py-2">
+    <SidebarFooter v-if="status" class="border-t p-3 group-data-[collapsible=icon]:items-center">
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton :tooltip="status.core.running ? '内核运行中' : '内核已停止'" as-child>
@@ -73,6 +62,5 @@ const groups = [
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarFooter>
-    <SidebarRail />
   </Sidebar>
 </template>
