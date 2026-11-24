@@ -17,6 +17,10 @@ Open `http://127.0.0.1:9080`. For frontend hot reload, run `npm run dev` under `
 
 ## Docker
 
+### Build from source with Docker Compose
+
+The bundled [Compose file](docker-compose.yml) builds from the local checkout and tags the result `foliage-sea/docker-clash:local`. It does not use the GHCR image or the image loaded from a GitHub Release archive. To deploy either prebuilt image, use the corresponding `docker run` command below.
+
 ```sh
 docker compose up --build -d
 ```
@@ -53,25 +57,38 @@ Set `IMAGE_NAME` or `MIHOMO_VERSION` to override their defaults. Load an exporte
 gzip -dc dist/docker-clash-v1.2.0-linux-amd64.tar.gz | docker load
 ```
 
-### Release image archives
+### Publish a release (maintainers)
 
-Pushing a semantic version tag builds `linux/amd64` and `linux/arm64` Docker image archives and attaches them to the matching GitHub Release. Both the asset filenames and image tags contain the version.
+Push a semantic version tag to publish the multi-platform image to GitHub Container Registry (GHCR) and attach `linux/amd64` and `linux/arm64` `.tar.gz` image archives to the matching GitHub Release. GHCR publishes only the version tag, not `latest`. Replace `v1.2.0` throughout these examples with the version you want.
 
 ```sh
 git tag -a v1.2.0 -m "v1.2.0"
 git push origin v1.2.0
 ```
 
-Download the archive for the target architecture, verify it against `SHA256SUMS-v1.2.0.txt`, and load it:
+The workflow can also be run manually for an existing version tag from the Actions page. After the first GHCR publication, a maintainer must open the package settings in GitHub and set its visibility to **Public** to enable anonymous pulls.
+
+### Deploy from GHCR (online)
+
+A public GHCR package can be pulled without `docker login`. Docker automatically selects `linux/amd64` or `linux/arm64` for the target platform. Always specify a published version tag:
+
+```sh
+docker pull ghcr.io/foliagesea/docker-clash:v1.2.0
+docker run --name docker-clash -d --restart unless-stopped \
+  -p 9080:9080 -p 27890:7890/tcp -p 27890:7890/udp \
+  -v docker-clash-data:/data ghcr.io/foliagesea/docker-clash:v1.2.0
+```
+
+### Deploy from a GitHub Release archive (offline)
+
+Download the `.tar.gz` asset for the target architecture (`linux-amd64` or `linux-arm64`) and verify it against `SHA256SUMS-v1.2.0.txt`. Transfer it to the offline host and load it with `docker load`. The archive restores the local image tag `foliage-sea/docker-clash:v1.2.0`, not the GHCR reference. This example uses the `linux-amd64` archive:
 
 ```sh
 gzip -dc docker-clash-v1.2.0-linux-amd64.tar.gz | docker load
-docker run --name docker-clash -d --restart unless-stopped \
+docker run --name docker-clash -d --restart unless-stopped --pull=never \
   -p 9080:9080 -p 27890:7890/tcp -p 27890:7890/udp \
   -v docker-clash-data:/data foliage-sea/docker-clash:v1.2.0
 ```
-
-The workflow can also be run manually for an existing version tag from the Actions page.
 
 ### Windows LAN access
 
