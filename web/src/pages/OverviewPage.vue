@@ -1,16 +1,25 @@
 <script setup lang="ts">
-import { ActivityIcon, ArrowRightIcon, CopyIcon, NetworkIcon, PowerIcon, ServerIcon } from '@lucide/vue'
+import { ArrowRightIcon, CopyIcon, PowerIcon } from '@lucide/vue'
 import { computed } from 'vue'
 import { toast } from 'vue-sonner'
 
 import PageHeader from '@/components/PageHeader.vue'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useConsole } from '@/composables/use-console'
 import { api } from '@/lib/api'
 
 const { status, nodes, entryGroups, settings, selectedNode, busy, run } = useConsole()
+const metrics = computed(() => [
+  {
+    label: '内核状态',
+    value: status.value ? (status.value.core.running ? '运行中' : '已停止') : '未知',
+    detail: status.value?.core.pid ? `PID ${status.value.core.pid}` : undefined,
+  },
+  { label: '代理节点', value: status.value ? nodes.value.length : '—' },
+  { label: '入口组', value: status.value ? entryGroups.value.length : '—' },
+  { label: 'Mixed 端口', value: status.value ? settings.value.mixedPort : '—', detail: 'HTTP + SOCKS5' },
+])
 const endpoints = computed(() => {
   const address = settings.value.externalAddress.trim()
   if (!address) return []
@@ -30,58 +39,58 @@ async function copy(value: string) {
 </script>
 
 <template>
-  <PageHeader title="运行概览" description="查看代理入口、默认出口与 mihomo 运行状态">
-    <Button :variant="status?.core.running ? 'destructive' : 'default'" :disabled="busy" @click="run(() => api.coreAction(status?.core.running ? 'stop' : 'start'), status?.core.running ? '内核已停止' : '内核已启动')">
+  <PageHeader title="运行概览">
+    <Button :variant="status?.core.running ? 'destructive' : 'default'" :disabled="busy || !status" @click="run(() => api.coreAction(status?.core.running ? 'stop' : 'start'), status?.core.running ? '内核已停止' : '内核已启动')">
       <PowerIcon data-icon="inline-start" />{{ status?.core.running ? '停止内核' : '启动内核' }}
     </Button>
   </PageHeader>
 
-  <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-    <Card>
-      <CardHeader class="flex-row items-center justify-between gap-3 pb-2"><CardDescription>内核状态</CardDescription><ActivityIcon class="text-muted-foreground" /></CardHeader>
-      <CardContent><CardTitle class="text-xl">{{ status?.core.running ? '运行中' : '已停止' }}</CardTitle><p class="mt-1 text-xs text-muted-foreground">{{ status?.core.pid ? `PID ${status.core.pid}` : 'mihomo core' }}</p></CardContent>
+  <div class="grid grid-cols-2 gap-3 @min-[46rem]:grid-cols-4 sm:gap-4">
+    <Card v-for="metric in metrics" :key="metric.label" class="min-w-0 py-4">
+      <CardContent class="px-4">
+        <dl class="flex flex-col gap-1">
+          <dt class="text-sm text-muted-foreground">{{ metric.label }}</dt>
+          <dd class="text-xl font-semibold tabular-nums">{{ metric.value }}</dd>
+          <dd v-if="metric.detail" class="text-xs text-muted-foreground">{{ metric.detail }}</dd>
+        </dl>
+      </CardContent>
     </Card>
-    <Card>
-      <CardHeader class="flex-row items-center justify-between gap-3 pb-2"><CardDescription>代理节点</CardDescription><ServerIcon class="text-muted-foreground" /></CardHeader>
-      <CardContent><CardTitle class="text-xl">{{ nodes.length }}</CardTitle><p class="mt-1 text-xs text-muted-foreground">已导入节点</p></CardContent>
-    </Card>
-    <Card>
-      <CardHeader class="flex-row items-center justify-between gap-3 pb-2"><CardDescription>入口组</CardDescription><NetworkIcon class="text-muted-foreground" /></CardHeader>
-      <CardContent><CardTitle class="text-xl">{{ entryGroups.length }}</CardTitle><p class="mt-1 text-xs text-muted-foreground">手动选择与故障转移</p></CardContent>
-    </Card>
-    <Card>
-      <CardHeader class="pb-2"><CardDescription>Mixed 代理端口</CardDescription></CardHeader>
-      <CardContent><CardTitle class="font-mono text-xl">{{ settings.mixedPort }}</CardTitle><p class="mt-1 text-xs text-muted-foreground">HTTP + SOCKS5</p></CardContent>
-    </Card>
-  </section>
+  </div>
 
-  <section class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,1fr)]">
-    <Card>
-      <CardHeader>
-        <div class="flex items-center justify-between gap-3"><div><CardTitle>默认出口</CardTitle><CardDescription class="mt-1">DOCKER_CLASH 策略组当前使用的节点</CardDescription></div><Badge :variant="status?.core.running ? 'default' : 'secondary'">{{ status?.core.running ? '在线' : '离线' }}</Badge></div>
-      </CardHeader>
+  <div class="mt-4 grid gap-4 @min-[46rem]:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] sm:mt-6">
+    <Card class="min-w-0 gap-4">
+      <CardHeader><CardTitle>默认出口</CardTitle></CardHeader>
       <CardContent class="flex flex-col gap-4">
-        <div v-if="selectedNode" class="flex items-center gap-4 rounded-md border p-4">
-          <span class="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary font-mono text-xs font-semibold">{{ selectedNode.type.slice(0, 3).toUpperCase() }}</span>
-          <div class="min-w-0"><strong class="block truncate">{{ selectedNode.name }}</strong><span class="block truncate font-mono text-xs text-muted-foreground">{{ selectedNode.server }}:{{ selectedNode.port }}</span></div>
+        <div v-if="selectedNode" class="rounded-md border p-3">
+          <strong class="block wrap-anywhere">{{ selectedNode.name }}</strong>
+          <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span>{{ selectedNode.type.toUpperCase() }}</span>
+            <span class="font-mono wrap-anywhere">{{ selectedNode.server }}:{{ selectedNode.port }}</span>
+          </div>
         </div>
-        <p v-else class="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">尚未选择出口节点</p>
-        <div class="flex flex-wrap gap-2">
-          <Button v-for="node in nodes.slice(0, 6)" :key="node.id" size="sm" :variant="node.name === settings.selectedNode ? 'default' : 'outline'" :disabled="busy" @click="run(() => api.selectNode(node.id), '默认出口已切换')">{{ node.name }}</Button>
-          <Button v-if="nodes.length > 6" variant="ghost" size="sm" as-child><RouterLink to="/nodes">全部节点<ArrowRightIcon data-icon="inline-end" /></RouterLink></Button>
+        <p v-else class="text-sm text-muted-foreground">{{ status ? '尚未选择出口节点' : '出口状态不可用' }}</p>
+        <div v-if="nodes.length" role="group" aria-label="切换默认出口" class="flex flex-wrap gap-2">
+          <Button v-for="node in nodes.slice(0, 6)" :key="node.id" size="sm" class="min-w-0 max-w-full" :variant="node.id === selectedNode?.id ? 'default' : 'outline'" :aria-pressed="node.id === selectedNode?.id" :disabled="busy" @click="run(() => api.selectNode(node.id), '默认出口已切换')"><span class="truncate">{{ node.name }}</span></Button>
         </div>
       </CardContent>
+      <CardFooter v-if="status && (nodes.length === 0 || nodes.length > 6)" class="mt-auto">
+        <Button variant="outline" size="sm" as-child><RouterLink to="/nodes">{{ nodes.length ? '全部节点' : '前往代理节点' }}<ArrowRightIcon data-icon="inline-end" /></RouterLink></Button>
+      </CardFooter>
     </Card>
 
-    <Card>
-      <CardHeader><CardTitle>外部代理地址</CardTitle><CardDescription>供其他设备连接的宿主机入口</CardDescription></CardHeader>
-      <CardContent class="flex flex-1 flex-col gap-3">
+    <Card class="min-w-0 gap-4">
+      <CardHeader><CardTitle>外部代理地址</CardTitle></CardHeader>
+      <CardContent class="flex flex-col gap-2">
         <template v-if="endpoints.length">
-          <Button v-for="endpoint in endpoints" :key="endpoint" variant="outline" class="justify-between font-mono" @click="copy(endpoint)"><span class="truncate">{{ endpoint }}</span><CopyIcon /></Button>
+          <Button v-for="endpoint in endpoints" :key="endpoint" variant="outline" class="h-auto min-h-9 min-w-0 justify-between" :aria-label="'复制代理地址 ' + endpoint" @click="copy(endpoint)">
+            <span class="whitespace-normal text-left font-mono wrap-anywhere">{{ endpoint }}</span><CopyIcon data-icon="inline-end" />
+          </Button>
         </template>
-        <p v-else class="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">请先配置外部访问地址</p>
-        <Button variant="ghost" class="mt-auto" as-child><RouterLink to="/settings">配置网络<ArrowRightIcon data-icon="inline-end" /></RouterLink></Button>
+        <p v-else class="text-sm text-muted-foreground">{{ status ? '未配置外部访问地址' : '外部地址不可用' }}</p>
       </CardContent>
+      <CardFooter class="mt-auto">
+        <Button :variant="endpoints.length ? 'ghost' : 'outline'" size="sm" as-child><RouterLink to="/settings">{{ endpoints.length ? '网络设置' : '配置网络' }}<ArrowRightIcon data-icon="inline-end" /></RouterLink></Button>
+      </CardFooter>
     </Card>
-  </section>
+  </div>
 </template>

@@ -8,7 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Field, FieldDescription, FieldLabel } from '@/components/ui/field'
+import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Textarea } from '@/components/ui/textarea'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useConsole } from '@/composables/use-console'
@@ -63,34 +63,69 @@ function scrollToDefaultNode() {
 </script>
 
 <template>
-  <PageHeader title="代理节点" description="导入、测速并选择默认代理出口">
+  <PageHeader title="代理节点">
     <Button variant="outline" :disabled="!selectedNode" @click="scrollToDefaultNode"><LocateFixedIcon data-icon="inline-start" />跳转默认节点</Button>
     <Button variant="outline" :disabled="!nodes.length || testing.size > 0" @click="testAll"><ActivityIcon data-icon="inline-start" />一键测速</Button>
-    <Button variant="destructive" :disabled="!nodes.length || busy" @click="clearOpen = true"><Trash2Icon data-icon="inline-start" />清空</Button>
+    <Button variant="destructive" :disabled="!nodes.length || busy" @click="clearOpen = true"><Trash2Icon data-icon="inline-start" />清空全部</Button>
     <Button @click="importOpen = true"><ImportIcon data-icon="inline-start" />导入节点</Button>
   </PageHeader>
 
   <div class="overflow-x-auto rounded-md border">
-    <Table class="min-w-[900px]">
-      <TableHeader><TableRow><TableHead>节点</TableHead><TableHead>协议</TableHead><TableHead>服务器</TableHead><TableHead>延迟</TableHead><TableHead>链路入口</TableHead><TableHead class="text-right">操作</TableHead></TableRow></TableHeader>
+    <Table v-if="nodes.length" class="table-fixed @min-[46rem]:table-auto">
+      <TableHeader>
+        <TableRow>
+          <TableHead scope="col">节点</TableHead>
+          <TableHead scope="col" class="hidden @min-[46rem]:table-cell">协议</TableHead>
+          <TableHead scope="col" class="hidden @min-[46rem]:table-cell">服务器</TableHead>
+          <TableHead scope="col" class="hidden @min-[46rem]:table-cell">延迟</TableHead>
+          <TableHead scope="col" class="hidden @min-[46rem]:table-cell">链路入口</TableHead>
+          <TableHead scope="col" class="w-28 text-right @min-[46rem]:w-auto">操作</TableHead>
+        </TableRow>
+      </TableHeader>
       <TableBody>
         <TableRow v-for="node in nodes" :id="`node-${node.id}`" :key="node.id">
-          <TableCell><div class="flex items-center gap-2"><span :class="['size-2 shrink-0 rounded-full', node.name === settings.selectedNode ? 'bg-emerald-500' : 'bg-muted-foreground/40']" /><strong>{{ node.name }}</strong></div></TableCell>
-          <TableCell><Badge variant="secondary">{{ node.type }}</Badge></TableCell>
-          <TableCell class="font-mono text-xs">{{ node.server }}:{{ node.port }}</TableCell>
-          <TableCell><Button variant="ghost" size="sm" :disabled="testing.has(node.id)" @click="testNode(node)">{{ testing.has(node.id) ? '测试中' : delays[node.id] === undefined ? '测试' : `${delays[node.id]} ms` }}</Button></TableCell>
-          <TableCell>{{ node.dialerProxy || 'DIRECT' }}</TableCell>
-          <TableCell><div class="flex justify-end gap-1"><Button variant="ghost" size="sm" :disabled="busy || node.name === settings.selectedNode" @click="run(() => api.selectNode(node.id), '默认出口已切换')"><LocateFixedIcon data-icon="inline-start" />设为默认</Button><Button variant="ghost" size="icon" title="删除节点" :disabled="busy" @click="remove(node)"><Trash2Icon /></Button></div></TableCell>
+          <TableCell class="align-top @min-[46rem]:align-middle">
+            <div class="flex max-w-64 flex-wrap items-center gap-2 whitespace-normal">
+              <strong class="wrap-anywhere">{{ node.name }}</strong>
+              <Badge v-if="node.name === settings.selectedNode" variant="outline">默认出口</Badge>
+            </div>
+            <dl class="mt-1 flex flex-col items-start gap-1 text-xs whitespace-normal @min-[46rem]:hidden">
+              <div><dt class="sr-only">协议</dt><dd><Badge variant="secondary">{{ node.type }}</Badge></dd></div>
+              <div class="min-w-0 max-w-full"><dt class="sr-only">服务器</dt><dd class="font-mono wrap-anywhere">{{ node.server }}:{{ node.port }}</dd></div>
+              <div class="flex min-w-0 max-w-full flex-wrap gap-x-1 text-muted-foreground">
+                <dt>链路入口：</dt><dd class="wrap-anywhere">{{ node.dialerProxy || 'DIRECT' }}</dd>
+              </div>
+            </dl>
+          </TableCell>
+          <TableCell class="hidden @min-[46rem]:table-cell"><Badge variant="secondary">{{ node.type }}</Badge></TableCell>
+          <TableCell class="hidden max-w-48 font-mono text-xs whitespace-normal wrap-anywhere @min-[46rem]:table-cell">{{ node.server }}:{{ node.port }}</TableCell>
+          <TableCell class="hidden @min-[46rem]:table-cell"><Button variant="ghost" size="sm" :disabled="testing.has(node.id)" @click="testNode(node)">{{ testing.has(node.id) ? '测试中' : delays[node.id] === undefined ? '测试' : `${delays[node.id]} ms` }}</Button></TableCell>
+          <TableCell class="hidden max-w-48 whitespace-normal wrap-anywhere @min-[46rem]:table-cell">{{ node.dialerProxy || 'DIRECT' }}</TableCell>
+          <TableCell>
+            <div class="flex flex-wrap justify-end gap-1">
+              <Button class="@min-[46rem]:hidden" variant="ghost" size="sm" :disabled="testing.has(node.id)" @click="testNode(node)">{{ testing.has(node.id) ? '测试中' : delays[node.id] === undefined ? '测速' : `${delays[node.id]} ms` }}</Button>
+              <Button v-if="node.name !== settings.selectedNode" variant="ghost" size="sm" :disabled="busy" @click="run(() => api.selectNode(node.id), '默认出口已切换')">设为默认</Button>
+              <Button variant="ghost" size="icon-sm" title="删除节点" :aria-label="`删除节点 ${node.name}`" :disabled="busy" @click="remove(node)"><Trash2Icon /></Button>
+            </div>
+          </TableCell>
         </TableRow>
-        <TableRow v-if="!nodes.length"><TableCell colspan="6" class="h-32 text-center text-muted-foreground">暂无节点，导入节点或订阅后开始使用</TableCell></TableRow>
       </TableBody>
     </Table>
+    <p v-else class="p-10 text-center text-sm text-muted-foreground">暂无节点，请导入节点或订阅。</p>
   </div>
 
   <Dialog v-model:open="importOpen">
     <DialogContent>
-      <DialogHeader><DialogTitle>导入节点或订阅</DialogTitle><DialogDescription>支持后端可解析的订阅地址和标准代理 URI</DialogDescription></DialogHeader>
-      <Field class="min-w-0"><FieldLabel for="node-uri">订阅或节点 URI</FieldLabel><Textarea id="node-uri" v-model="uri" rows="5" class="max-w-full" placeholder="粘贴订阅地址或代理 URI" /><FieldDescription>多个节点可通过订阅内容一次导入。</FieldDescription></Field>
+      <DialogHeader>
+        <DialogTitle>导入节点或订阅</DialogTitle>
+        <DialogDescription>支持标准代理 URI；使用订阅地址可一次导入多个节点。</DialogDescription>
+      </DialogHeader>
+      <FieldGroup>
+        <Field class="min-w-0">
+          <FieldLabel for="node-uri">订阅地址或节点 URI</FieldLabel>
+          <Textarea id="node-uri" v-model="uri" rows="5" class="max-w-full" />
+        </Field>
+      </FieldGroup>
       <DialogFooter><Button variant="outline" @click="importOpen = false">取消</Button><Button :disabled="busy || !uri.trim()" @click="importNodes">导入</Button></DialogFooter>
     </DialogContent>
   </Dialog>

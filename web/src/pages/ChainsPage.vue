@@ -68,36 +68,37 @@ async function setDialer(node: Node, value: string) {
 </script>
 
 <template>
-  <PageHeader title="入口与链路" description="组合节点入口，并配置节点的前置代理链路">
-    <Button :disabled="busy || !nodes.length" @click="createGroup"><PlusIcon data-icon="inline-start" />创建入口组</Button>
-  </PageHeader>
+  <PageHeader title="入口与链路" />
 
-  <section>
-    <div class="mb-3"><h2 class="font-semibold">入口组</h2><p class="text-sm text-muted-foreground">手动选择固定成员，或按顺序自动故障转移</p></div>
+  <section class="flex flex-col gap-3" aria-labelledby="entry-groups-heading">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2 id="entry-groups-heading" class="font-semibold">入口组</h2>
+      <Button :disabled="busy || !nodes.length" @click="createGroup"><PlusIcon data-icon="inline-start" />创建入口组</Button>
+    </div>
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       <Card v-for="group in entryGroups" :key="group.id">
-        <CardHeader><div class="flex items-start justify-between gap-3"><div><CardTitle>{{ group.name }}</CardTitle><CardDescription class="mt-1">{{ group.nodeIds.length }} 个成员节点</CardDescription></div><Badge variant="secondary">{{ group.type === 'select' ? '手动选择' : '故障转移' }}</Badge></div></CardHeader>
+        <CardHeader><div class="flex flex-wrap items-start justify-between gap-3"><div class="min-w-0"><CardTitle class="wrap-anywhere">{{ group.name }}</CardTitle><CardDescription>{{ group.nodeIds.length }} 个成员节点</CardDescription></div><Badge variant="secondary">{{ group.type === 'select' ? '手动选择' : '故障转移' }}</Badge></div></CardHeader>
         <CardContent class="flex flex-col gap-3">
           <Field v-if="group.type === 'select'">
-            <FieldLabel>当前成员</FieldLabel>
+            <FieldLabel :for="`current-member-${group.id}`">当前成员</FieldLabel>
             <Select :model-value="group.selectedNodeId" :disabled="busy" @update:model-value="value => value && run(() => api.selectEntryGroupNode(group.id, String(value)), '入口组成员已切换')">
-              <SelectTrigger><SelectValue placeholder="选择成员" /></SelectTrigger>
+              <SelectTrigger :id="`current-member-${group.id}`" class="max-w-full"><SelectValue placeholder="选择成员" /></SelectTrigger>
               <SelectContent><SelectGroup><SelectItem v-for="id in group.nodeIds" :key="id" :value="id">{{ nodeById.get(id)?.name || '节点已移除' }}</SelectItem></SelectGroup></SelectContent>
             </Select>
           </Field>
-          <div v-else class="flex flex-col gap-2 text-sm"><span class="text-muted-foreground">优先顺序</span><strong>{{ group.nodeIds.map(id => nodeById.get(id)?.name || '未知节点').join(' → ') }}</strong><span class="text-xs text-muted-foreground">每 {{ group.interval || 60 }} 秒检测一次</span></div>
+          <div v-else class="flex flex-col gap-2 text-sm"><span class="text-muted-foreground">优先顺序</span><strong class="wrap-anywhere">{{ group.nodeIds.map(id => nodeById.get(id)?.name || '未知节点').join(' → ') }}</strong><span class="text-xs text-muted-foreground">每 {{ group.interval || 60 }} 秒检测一次</span></div>
         </CardContent>
-        <CardFooter class="justify-end gap-2"><Button variant="ghost" size="icon" title="编辑入口组" @click="editGroup(group)"><PencilIcon /></Button><Button variant="ghost" size="icon" title="删除入口组" @click="removeGroup(group)"><Trash2Icon /></Button></CardFooter>
+        <CardFooter class="justify-end gap-2"><Button variant="ghost" size="icon" title="编辑入口组" :aria-label="`编辑入口组 ${group.name}`" @click="editGroup(group)"><PencilIcon /></Button><Button variant="ghost" size="icon" title="删除入口组" :aria-label="`删除入口组 ${group.name}`" @click="removeGroup(group)"><Trash2Icon /></Button></CardFooter>
       </Card>
       <p v-if="!entryGroups.length" class="col-span-full rounded-md border border-dashed p-10 text-center text-sm text-muted-foreground">暂无入口组</p>
     </div>
   </section>
 
-  <section class="mt-8">
-    <div class="mb-3"><h2 class="font-semibold">节点链路</h2><p class="text-sm text-muted-foreground">为节点指定 DIRECT、入口组或另一个节点作为拨号入口</p></div>
+  <section class="mt-8 flex flex-col gap-3" aria-labelledby="node-chains-heading">
+    <h2 id="node-chains-heading" class="font-semibold">节点拨号入口</h2>
     <div class="overflow-hidden rounded-md border">
       <div v-for="node in nodes" :key="node.id" class="grid gap-3 border-b p-4 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_minmax(220px,320px)] sm:items-center">
-        <div class="min-w-0"><strong class="block truncate">{{ node.name }}</strong><span class="font-mono text-xs text-muted-foreground">{{ node.server }}:{{ node.port }}</span></div>
+        <div class="min-w-0"><strong class="block wrap-anywhere">{{ node.name }}</strong><span class="wrap-anywhere font-mono text-xs text-muted-foreground">{{ node.server }}:{{ node.port }}</span></div>
         <Select
           v-if="dialerOpenId === node.id"
           :model-value="node.dialerProxy || '__direct__'"
@@ -106,15 +107,15 @@ async function setDialer(node: Node, value: string) {
           @update:open="value => { if (!value) dialerOpenId = undefined }"
           @update:model-value="value => value && setDialer(node, String(value))"
         >
-          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectTrigger class="max-w-full" :aria-label="`${node.name} 的拨号入口`"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectGroup><SelectLabel>直连</SelectLabel><SelectItem value="__direct__">DIRECT</SelectItem></SelectGroup>
             <SelectGroup v-if="entryGroups.length"><SelectLabel>入口组</SelectLabel><SelectItem v-for="group in entryGroups" :key="group.id" :value="group.name">{{ group.name }}</SelectItem></SelectGroup>
             <SelectGroup><SelectLabel>单节点</SelectLabel><SelectItem v-for="candidate in nodes.filter(item => item.id !== node.id)" :key="candidate.id" :value="candidate.name">{{ candidate.name }}</SelectItem></SelectGroup>
           </SelectContent>
         </Select>
-        <button v-else type="button" :disabled="busy" :class="dialerTriggerClass" @click="dialerOpenId = node.id">
-          <span class="line-clamp-1">{{ node.dialerProxy || 'DIRECT' }}</span>
+        <button v-else type="button" class="max-w-full" :disabled="busy" :class="dialerTriggerClass" :aria-label="`${node.name} 的拨号入口：${node.dialerProxy || 'DIRECT'}`" @click="dialerOpenId = node.id">
+          <span class="truncate">{{ node.dialerProxy || 'DIRECT' }}</span>
           <ChevronDownIcon class="size-4 opacity-50" />
         </button>
       </div>
@@ -128,9 +129,9 @@ async function setDialer(node: Node, value: string) {
       <FieldGroup>
         <Field><FieldLabel for="group-name">名称</FieldLabel><Input id="group-name" v-model="draft.name" placeholder="例如：香港入口" /></Field>
         <Field>
-          <FieldLabel>模式</FieldLabel>
-          <Select v-model="draft.type"><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectGroup><SelectItem value="select">手动选择</SelectItem><SelectItem value="fallback">故障转移</SelectItem></SelectGroup></SelectContent></Select>
-          <FieldDescription>故障转移将按成员顺序自动选择可用节点。</FieldDescription>
+          <FieldLabel for="group-mode">模式</FieldLabel>
+          <Select v-model="draft.type"><SelectTrigger id="group-mode" aria-describedby="group-mode-help"><SelectValue /></SelectTrigger><SelectContent><SelectGroup><SelectItem value="select">手动选择</SelectItem><SelectItem value="fallback">故障转移</SelectItem></SelectGroup></SelectContent></Select>
+          <FieldDescription id="group-mode-help">故障转移按成员顺序自动选择可用节点。</FieldDescription>
         </Field>
         <FieldSet><FieldLegend>成员节点</FieldLegend><FieldGroup class="max-h-48 overflow-y-auto rounded-md border p-3">
           <Field v-for="node in nodes" :key="node.id" orientation="horizontal"><Checkbox :id="`member-${node.id}`" :model-value="draft.nodeIds.includes(node.id)" @update:model-value="checked => toggleMember(node.id, checked)" /><FieldLabel :for="`member-${node.id}`" class="font-normal">{{ node.name }} <span class="text-muted-foreground">({{ node.type }})</span></FieldLabel></Field>
